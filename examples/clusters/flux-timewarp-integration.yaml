@@ -1,0 +1,81 @@
+# Example integration for flux-timewarp repository
+# This shows how to add flux-shared-platform as a source and use shared components
+
+---
+# Add shared platform as a GitRepository source
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-shared-platform
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    branch: main
+  url: https://github.com/timewarp/flux-shared-platform
+
+---
+# Use shared cert-manager component
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-shared
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./infrastructure/cert-manager
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: cert-manager
+  timeout: 3m
+  wait: true
+
+---
+# Use shared external-secrets component  
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-secrets-shared
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./infrastructure/external-secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: external-secrets
+  timeout: 3m
+  wait: true
+
+---
+# Use shared argo-workflows with cluster-specific customization
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: argo-workflows-shared
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: external-secrets-shared
+  interval: 30m
+  path: ./infrastructure/argo-workflows
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: argo-workflows
+  timeout: 3m
+  wait: true
+  patches:
+    # Customize workflow namespaces for production cluster
+    - patch: |
+        - op: replace
+          path: /spec/values/controller/workflowNamespaces
+          value: ["kube-system", "timewarp"]
+      target:
+        kind: HelmRelease
+        name: argo-workflows
+        namespace: argo-workflows
