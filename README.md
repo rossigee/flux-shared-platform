@@ -19,7 +19,12 @@ flux-shared-platform/
 │   ├── cert-manager/       # Certificate management
 │   ├── external-secrets/   # External secrets operator
 │   ├── argo-workflows/     # Workflow engine
-│   └── ...
+│   └── prometheus-operator/ # Monitoring stack
+├── helm-repos/             # Common Helm repository definitions
+│   ├── jetstack.yaml      # Cert-manager charts
+│   ├── external-secrets.yaml # External secrets charts
+│   ├── argoproj.yaml      # Argo project charts
+│   └── prometheus.yaml    # Prometheus community charts
 ├── templates/
 │   ├── automation/         # Flux automation templates
 │   ├── kustomization/      # Common kustomization patterns
