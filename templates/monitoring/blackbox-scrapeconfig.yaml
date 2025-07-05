@@ -1,0 +1,25 @@
+# Blackbox Exporter Scrape Configuration Template
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: blackbox-websites
+  labels:
+    app: prometheus
+spec:
+  staticConfigs:
+  - targets:
+      # Add your website targets to monitor
+      # Example: 'https://example.com'
+    labels:
+      job: BlackboxWebsiteMetrics
+  metricsPath: /probe
+  params:
+    module: [http_2xx]
+  relabelConfigs:
+  - sourceLabels: [__address__]
+    targetLabel: __param_target
+  - sourceLabels: [__param_target]
+    targetLabel: instance
+  - targetLabel: __address__
+    replacement: blackbox-exporter.monitoring.svc:9115

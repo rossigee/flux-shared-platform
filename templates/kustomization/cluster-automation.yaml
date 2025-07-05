@@ -1,0 +1,22 @@
+# Template for cluster automation kustomization
+# This shows the pattern for deploying components in a cluster
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: COMPONENT_NAME
+spec:
+  dependsOn:
+    # Add dependencies as needed
+    - name: external-secrets
+  interval: 30m0s
+  path: COMPONENT_PATH
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: REPO_NAME
+    namespace: flux-system
+  targetNamespace: COMPONENT_NAMESPACE
+  timeout: 3m0s
+  wait: true

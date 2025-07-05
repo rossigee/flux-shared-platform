@@ -1,0 +1,26 @@
+# Standard Ingress Template
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: COMPONENT_NAME-ingress
+  namespace: NAMESPACE_NAME
+  annotations:
+    cert-manager.io/cluster-issuer: "CLUSTER_ISSUER_NAME"
+    # Add additional annotations as needed for your ingress controller
+spec:
+  tls:
+  - hosts:
+    - HOSTNAME
+    secretName: COMPONENT_NAME-tls
+  rules:
+  - host: HOSTNAME
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: COMPONENT_NAME
+            port:
+              number: SERVICE_PORT

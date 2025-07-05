@@ -1,0 +1,10 @@
+# Standard component kustomization template
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: COMPONENT_NAMESPACE
+resources:
+  - automation.yaml
+  - helmrelease.yaml
+  - namespace.yaml
+  # Add additional resources as needed

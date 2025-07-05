@@ -1,0 +1,62 @@
+# SSO RBAC Template for Keycloak/OIDC integration
+# Replace SSO_GROUP_* and CLUSTER_DOMAIN with your values
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sso-admin
+  namespace: kube-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sso-admin
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sso-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sso-admin
+subjects:
+- kind: Group
+  name: /SSO_GROUP_ADMINISTRATORS
+  apiGroup: rbac.authorization.k8s.io
+- kind: ServiceAccount
+  name: sso-admin
+  namespace: kube-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sso-users
+rules:
+- apiGroups: [""]
+  resources: ["namespaces", "pods", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sso-users
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sso-users
+subjects:
+- kind: Group
+  name: /SSO_GROUP_USERS
+  apiGroup: rbac.authorization.k8s.io

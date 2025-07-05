@@ -1,0 +1,39 @@
+# Discord Notification Templates
+# Replace SECRET_NAME with your Discord webhook secret name
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: flux-discord
+spec:
+  type: discord
+  secretRef:
+    name: SECRET_NAME
+
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: all-events
+spec:
+  providerRef:
+    name: flux-discord
+  eventSeverity: info
+  eventSources:
+    - kind: GitRepository
+      name: '*'
+    - kind: HelmRelease
+      name: '*'
+    - kind: HelmChart
+      name: '*'
+    - kind: Bucket
+      name: '*'
+    - kind: ImageUpdateAutomation
+      name: '*'
+    - kind: ImageRepository
+      name: '*'
+    - kind: Kustomization
+      name: '*'
+  exclusionList:
+    - "waiting.*socket"
+    - "potentially.*timeout"

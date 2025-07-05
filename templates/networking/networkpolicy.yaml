@@ -1,0 +1,44 @@
+# Standard Network Policy Template
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: COMPONENT_NAME-netpol
+  namespace: NAMESPACE_NAME
+spec:
+  podSelector:
+    matchLabels:
+      app: COMPONENT_NAME
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress from specific sources
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ALLOWED_NAMESPACE
+      ports:
+        - protocol: TCP
+          port: SERVICE_PORT
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow HTTPS egress
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80

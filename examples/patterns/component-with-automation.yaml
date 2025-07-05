@@ -1,0 +1,54 @@
+# Example of using shared automation templates for a component
+---
+# Use the shared infrastructure component
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: my-component
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./infrastructure/my-component
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: my-component
+  timeout: 3m
+  wait: true
+
+---
+# Add component-specific automation by customizing the template
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: my-component
+resources:
+  # Reference shared automation template and customize
+  - ../../templates/automation/image-update-automation.yaml
+
+patches:
+  # Customize the template for this component
+  - patch: |
+      - op: replace
+        path: /metadata/name
+        value: my-component
+      - op: replace  
+        path: /spec/image
+        value: nginx
+      - op: replace
+        path: /spec/policy/semver/range
+        value: ">=1.20.0"
+    target:
+      kind: ImageRepository
+      name: COMPONENT_NAME
+  
+  - patch: |
+      - op: replace
+        path: /metadata/name
+        value: my-component
+      - op: replace
+        path: /spec/update/path
+        value: "./clusters/production/my-component"
+    target:
+      kind: ImageUpdateAutomation
+      name: COMPONENT_NAME

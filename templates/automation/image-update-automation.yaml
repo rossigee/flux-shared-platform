@@ -1,0 +1,48 @@
+# Image Update Automation Template
+# Replace COMPONENT_NAME, REPO_NAME, and CLUSTER_PATH with actual values
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: COMPONENT_NAME
+spec:
+  image: CONTAINER_IMAGE
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: COMPONENT_NAME
+spec:
+  imageRepositoryRef:
+    name: COMPONENT_NAME
+  policy:
+    semver:
+      range: 'SEMVER_RANGE'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: COMPONENT_NAME
+spec:
+  interval: 2h
+  sourceRef:
+    kind: GitRepository
+    name: REPO_NAME
+    namespace: flux-system
+  git:
+    checkout:
+      ref:
+        branch: BRANCH_NAME
+    commit:
+      author:
+        email: flux-image-automation@DOMAIN
+        name: Flux2
+      messageTemplate: '{{range .Updated.Images}}{{println .}}{{end}}'
+    push:
+      branch: BRANCH_NAME
+  update:
+    path: CLUSTER_PATH
+    strategy: Setters

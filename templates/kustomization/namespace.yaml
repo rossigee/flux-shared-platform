@@ -1,0 +1,9 @@
+# Standard namespace template
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    # Replace with your organization's label pattern
+    ORGANIZATION_DOMAIN/ca-configmap: enabled
+  name: NAMESPACE_NAME

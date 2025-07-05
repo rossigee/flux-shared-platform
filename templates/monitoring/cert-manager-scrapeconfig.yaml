@@ -1,0 +1,16 @@
+# Cert-Manager Metrics Scrape Configuration Template
+# Replace CLUSTER_DOMAINS with your actual cluster domains
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: cert-manager
+  labels:
+    app: prometheus
+spec:
+  staticConfigs:
+  - targets:
+      # Add your cluster-specific targets here
+      # Example: 'cert-manager.cert-manager.svc.CLUSTER_DOMAIN:9402'
+    labels:
+      job: CertManager

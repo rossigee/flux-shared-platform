@@ -1,0 +1,74 @@
+# Example cluster configuration using shared components
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-shared-platform
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    branch: main
+  url: https://github.com/your-org/flux-shared-platform
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./infrastructure/cert-manager
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: cert-manager
+  timeout: 3m
+  wait: true
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./infrastructure/external-secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: external-secrets
+  timeout: 3m
+  wait: true
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: argo-workflows
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: external-secrets
+  interval: 30m
+  path: ./infrastructure/argo-workflows
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: argo-workflows
+  timeout: 3m
+  wait: true
+  patches:
+    # Override workflow namespaces for this cluster
+    - patch: |
+        - op: replace
+          path: /spec/values/controller/workflowNamespaces
+          value: ["default", "workflows"]
+      target:
+        kind: HelmRelease
+        name: argo-workflows
