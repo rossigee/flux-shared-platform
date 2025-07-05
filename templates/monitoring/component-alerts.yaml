@@ -1,0 +1,42 @@
+# Generic Component Health Alert Rules Template
+# Replace COMPONENT_NAME and NAMESPACE_NAME with actual values
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: COMPONENT_NAME-rules
+  labels:
+    app: prometheus
+spec:
+  groups:
+    - name: COMPONENT_NAME.rules
+      rules:
+        - alert: COMPONENT_NAMEDown
+          expr: up{job="COMPONENT_NAME"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: COMPONENT_NAME
+          annotations:
+            summary: "COMPONENT_NAME is down"
+            description: "COMPONENT_NAME in namespace NAMESPACE_NAME has been down for more than 5 minutes."
+        
+        - alert: COMPONENT_NAMEHighCPU
+          expr: rate(container_cpu_usage_seconds_total{pod=~"COMPONENT_NAME-.*", namespace="NAMESPACE_NAME"}[5m]) > 0.8
+          for: 10m
+          labels:
+            severity: warning
+            component: COMPONENT_NAME
+          annotations:
+            summary: "High CPU usage for COMPONENT_NAME"
+            description: "COMPONENT_NAME in namespace NAMESPACE_NAME is using {{ $value | humanizePercentage }} CPU."
+        
+        - alert: COMPONENT_NAMEHighMemory
+          expr: container_memory_usage_bytes{pod=~"COMPONENT_NAME-.*", namespace="NAMESPACE_NAME"} / container_spec_memory_limit_bytes > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            component: COMPONENT_NAME
+          annotations:
+            summary: "High memory usage for COMPONENT_NAME"
+            description: "COMPONENT_NAME in namespace NAMESPACE_NAME is using {{ $value | humanizePercentage }} of memory limit."

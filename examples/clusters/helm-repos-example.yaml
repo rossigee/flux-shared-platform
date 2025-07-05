@@ -1,0 +1,38 @@
+# Example: Using shared helm repositories
+# Deploy helm repositories before infrastructure components
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: helm-repos
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./helm-repos
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  timeout: 3m
+  wait: true
+
+---
+# Deploy infrastructure components after helm repos are ready
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: helm-repos
+  interval: 30m
+  path: ./infrastructure/cert-manager
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: cert-manager
+  timeout: 3m
+  wait: true

@@ -1,0 +1,81 @@
+# Example: Complete monitoring stack deployment
+# This shows how to deploy prometheus-operator with customizations
+
+---
+# Deploy shared prometheus-operator
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: prometheus-operator-shared
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: helm-repos
+  interval: 30m
+  path: ./infrastructure/prometheus-operator
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: prometheus-operator
+  timeout: 10m
+  wait: true
+  patches:
+    # Customize Prometheus configuration
+    - patch: |
+        - op: add
+          path: /spec/values
+          value:
+            prometheus:
+              prometheusSpec:
+                retention: 30d
+                storageSpec:
+                  volumeClaimTemplate:
+                    spec:
+                      storageClassName: fast-ssd
+                      resources:
+                        requests:
+                          storage: 50Gi
+            grafana:
+              enabled: true
+              adminPassword: change-me-in-production
+              ingress:
+                enabled: true
+                hosts:
+                  - grafana.example.com
+                tls:
+                  - secretName: grafana-tls
+                    hosts:
+                      - grafana.example.com
+            alertmanager:
+              alertmanagerSpec:
+                storage:
+                  volumeClaimTemplate:
+                    spec:
+                      storageClassName: fast-ssd
+                      resources:
+                        requests:
+                          storage: 10Gi
+      target:
+        kind: HelmRelease
+        name: kube-prometheus-stack
+
+---
+# Deploy cluster-specific monitoring configurations
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: monitoring-config
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: prometheus-operator-shared
+  interval: 30m
+  path: ./clusters/production/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: your-cluster-repo
+  targetNamespace: prometheus-operator
+  timeout: 3m
+  wait: true

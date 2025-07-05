@@ -1,0 +1,41 @@
+# Flux GitOps Alert Rules Template
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-gitops-rules
+  labels:
+    app: prometheus
+spec:
+  groups:
+    - name: flux.rules
+      rules:
+        - alert: FluxReconciliationFailure
+          expr: increase(gotk_reconcile_condition{type="Ready",status="False"}[10m]) > 0
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Flux reconciliation failing"
+            description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} reconciliation has been failing for more than 15 minutes."
+        
+        - alert: FluxSuspendedResource
+          expr: gotk_suspend_status == 1
+          for: 24h
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Flux resource suspended for extended period"
+            description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} has been suspended for more than 24 hours."
+        
+        - alert: FluxSourceNotReady
+          expr: gotk_reconcile_condition{kind=~"GitRepository|HelmRepository|OCIRepository",type="Ready",status="False"} == 1
+          for: 10m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Flux source not ready"
+            description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} source has not been ready for more than 10 minutes."
