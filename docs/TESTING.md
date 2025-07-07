@@ -95,10 +95,10 @@ spec:
     - |
       # Test cert-manager webhook
       curl -k https://cert-manager-webhook.cert-manager.svc:443/readyz
-      
+
       # Test external-secrets
       curl http://external-secrets.external-secrets.svc:8080/metrics
-      
+
       # Test argo-workflows
       curl http://argo-workflows-server.argo-workflows.svc:2746/api/v1/info
   restartPolicy: Never

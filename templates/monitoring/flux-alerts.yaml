@@ -19,7 +19,7 @@ spec:
           annotations:
             summary: "Flux reconciliation failing"
             description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} reconciliation has been failing for more than 15 minutes."
-        
+
         - alert: FluxSuspendedResource
           expr: gotk_suspend_status == 1
           for: 24h
@@ -29,7 +29,7 @@ spec:
           annotations:
             summary: "Flux resource suspended for extended period"
             description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} has been suspended for more than 24 hours."
-        
+
         - alert: FluxSourceNotReady
           expr: gotk_reconcile_condition{kind=~"GitRepository|HelmRepository|OCIRepository",type="Ready",status="False"} == 1
           for: 10m

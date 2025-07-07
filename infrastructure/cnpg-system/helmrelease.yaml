@@ -15,14 +15,14 @@ spec:
         namespace: flux-system
   values:
     namespaceOverride: cnpg-system
-    
+
     # Enable monitoring and metrics
     monitoring:
       enabled: true
       podMonitorEnabled: true
       podMonitor:
         enabled: true
-      
+
     # Enable metrics collection
     config:
       data:

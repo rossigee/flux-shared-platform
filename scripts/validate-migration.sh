@@ -25,9 +25,9 @@ check_resource() {
     local resource_type=$1
     local resource_name=$2
     local namespace=${3:-flux-system}
-    
+
     echo "🔍 Checking $resource_type/$resource_name in namespace $namespace..."
-    
+
     if kubectl get $resource_type $resource_name -n $namespace &> /dev/null; then
         local status=$(kubectl get $resource_type $resource_name -n $namespace -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
         if [[ "$status" == "True" ]]; then
