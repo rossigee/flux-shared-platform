@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: vault
+spec:
+  image: hashicorp/vault
+  interval: 2h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: vault
+spec:
+  imageRepositoryRef:
+    name: vault
+  policy:
+    semver:
+      range: '>=1.12.0'
