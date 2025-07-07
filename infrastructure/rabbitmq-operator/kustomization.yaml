@@ -1,0 +1,10 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: rabbitmq-system
+resources:
+  - namespace.yaml
+  - cluster-operator.yaml
+  - cluster-operator-manager.yaml
+  - messaging-topology-operator.yaml
+  - messaging-topology-operator-manager.yaml
