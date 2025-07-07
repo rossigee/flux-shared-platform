@@ -26,7 +26,6 @@ spec:
           value: "false"
     server:
       extraArgs:
-        - --auth-mode=sso
         - --auth-mode=client
     workflow:
       serviceAccount:
