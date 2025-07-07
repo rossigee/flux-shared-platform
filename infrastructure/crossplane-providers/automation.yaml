@@ -1,0 +1,43 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: crossplane-providers
+  namespace: flux-system
+spec:
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  git:
+    checkout:
+      ref:
+        branch: master
+    commit:
+      author:
+        email: flux@golder.lan
+        name: Flux
+      messageTemplate: |
+        Automated image update
+
+        Automation name: {{ .AutomationObject }}
+
+        Files:
+        {{ range $filename, $_ := .Updated.Files -}}
+        - {{ $filename }}
+        {{ end -}}
+
+        Objects:
+        {{ range $resource, $_ := .Updated.Objects -}}
+        - {{ $resource.Kind }} {{ $resource.Name }}
+        {{ end -}}
+
+        Images:
+        {{ range .Updated.Images -}}
+        - {{.}}
+        {{ end -}}
+    push:
+      branch: master
+  interval: 30m
+  update:
+    path: "./infrastructure/crossplane-providers"
+    strategy: Setters

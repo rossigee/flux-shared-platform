@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: kobold
+spec:
+  image: bluebrown/kobold
+  interval: 2h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: kobold
+spec:
+  imageRepositoryRef:
+    name: kobold
+  policy:
+    semver:
+      range: '>=0.3.0'
