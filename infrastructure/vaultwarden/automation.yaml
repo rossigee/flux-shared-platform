@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: vaultwarden-server
+spec:
+  image: vaultwarden/server
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: vaultwarden-server
+spec:
+  imageRepositoryRef:
+    name: vaultwarden-server
+  policy:
+    semver:
+      range: '>=1.23.0'
