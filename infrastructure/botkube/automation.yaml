@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: botkube
+spec:
+  image: ghcr.io/kubeshop/botkube
+  interval: 60m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: botkube
+spec:
+  imageRepositoryRef:
+    name: botkube
+  policy:
+    semver:
+      range: ">=1.10.0"
