@@ -1,0 +1,29 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: crossplane
+spec:
+  interval: 20m
+  timeout: 10m
+  chart:
+    spec:
+      chart: crossplane
+      version: 1.20.0
+      sourceRef:
+        kind: HelmRepository
+        name: crossplane
+        namespace: flux-system
+  values:
+    # Environment-specific configurations should be added via cluster-specific patches
+    args:
+    - core
+    - start
+    - --debug
+    - --cache-dir=/cache
+    - --cache-max-age=24h
+    resources:
+      limits:
+        memory: 2Gi
+      requests:
+        memory: 256Mi

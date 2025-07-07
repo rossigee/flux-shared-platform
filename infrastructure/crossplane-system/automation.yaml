@@ -1,0 +1,24 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: crossplane
+spec:
+  image: crossplane/crossplane
+  interval: 20m
+  exclusionList:
+    - 'sha256.*'
+    - '.*preview.*'
+    - '.*\-.*'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: crossplane
+spec:
+  imageRepositoryRef:
+    name: crossplane
+  policy:
+    semver:
+      range: '>=v1.18.x'
