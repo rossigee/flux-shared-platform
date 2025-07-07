@@ -1,0 +1,19 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: keycloak
+spec:
+  interval: 20m
+  chart:
+    spec:
+      chart: keycloakx
+      version: 7.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: codecentric
+        namespace: flux-system
+  values:
+    # Base configuration - override in cluster-specific configurations
+    replicas: 1
+    # Additional values should be provided by cluster-specific patches
