@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-admin-credentials
+type: Opaque
+stringData:
+  username: admin
+  # Password will be populated by External Secrets
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: admin
+spec:
+  tags:
+    - administrator
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: rabbitmq-admin-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: admin-all-vhosts
+spec:
+  vhost: "/"
+  userReference:
+    name: admin
+  permissions:
+    configure: ".*"
+    read: ".*"
+    write: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: admin-mikrotik-vhost
+spec:
+  vhost: "mikrotik-system"
+  userReference:
+    name: admin
+  permissions:
+    configure: ".*"
+    read: ".*"
+    write: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scratchmail-rabbitmq-credentials
+type: Opaque
+stringData:
+  username: scratchmail
+  # Password will be populated by External Secrets
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: scratchmail
+spec:
+  tags:
+    - monitoring
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: scratchmail-rabbitmq-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: scratchmail-default-vhost
+spec:
+  vhost: "/"
+  userReference:
+    name: scratchmail
+  permissions:
+    configure: "scratchmail.*"
+    read: "scratchmail.*|email-.*"
+    write: "scratchmail.*|email-.*"
+  rabbitmqClusterReference:
+    name: rabbitmq

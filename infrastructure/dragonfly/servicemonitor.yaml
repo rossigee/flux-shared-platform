@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-metrics
+  namespace: dragonfly-system
+  labels:
+    app: dragonfly
+spec:
+  selector:
+    app: dragonfly
+    component: dfdaemon
+  ports:
+  - name: metrics
+    port: 8000
+    targetPort: 8000
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dragonfly
+  namespace: dragonfly-system
+spec:
+  selector:
+    matchLabels:
+      app: dragonfly
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics

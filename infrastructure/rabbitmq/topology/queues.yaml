@@ -1,0 +1,50 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: email-processing
+spec:
+  name: email-processing
+  vhost: "/"
+  durable: true
+  autoDelete: false
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: email-processing-binding
+spec:
+  vhost: "/"
+  source: scratchmail
+  destination: email-processing
+  destinationType: queue
+  routingKey: ""
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: backups-queue
+spec:
+  name: backups
+  vhost: "/"
+  durable: true
+  autoDelete: false
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: backups-binding
+spec:
+  vhost: "/"
+  source: backups
+  destination: backups
+  destinationType: queue
+  routingKey: backups
+  rabbitmqClusterReference:
+    name: rabbitmq

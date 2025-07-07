@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dragonfly-mysql
+  namespace: dragonfly-system
+spec:
+  serviceName: dragonfly-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dragonfly-mysql
+  template:
+    metadata:
+      labels:
+        app: dragonfly-mysql
+    spec:
+      # Prefer healthy worker nodes
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - "golder-secops-workernode-5"
+                - "golder-secops-workernode-1"
+      containers:
+      - name: mysql
+        image: mirror.gcr.io/library/mysql:8.0
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_DATABASE
+          value: "dragonfly"
+        - name: MYSQL_USER
+          value: "dragonfly"
+        envFrom:
+        - secretRef:
+            name: dragonfly-mysql-credentials
+            # MYSQL_ROOT_PASSWORD and MYSQL_PASSWORD from External Secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: csi-driver-lvm-linear
+      resources:
+        requests:
+          storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-mysql
+  namespace: dragonfly-system
+spec:
+  selector:
+    app: dragonfly-mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+  type: ClusterIP

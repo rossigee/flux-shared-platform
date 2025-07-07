@@ -1,0 +1,39 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: scratchmail-exchange
+spec:
+  name: scratchmail
+  vhost: "/"
+  type: direct
+  durable: true
+  autoDelete: false
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: backups-exchange
+spec:
+  name: backups
+  vhost: "/"
+  type: direct
+  durable: true
+  autoDelete: false
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: mqtt-exchange
+spec:
+  name: amq.topic
+  vhost: mikrotik-system
+  type: topic
+  durable: true
+  autoDelete: false
+  rabbitmqClusterReference:
+    name: rabbitmq

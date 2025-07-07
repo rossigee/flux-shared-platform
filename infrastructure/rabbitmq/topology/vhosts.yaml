@@ -1,0 +1,18 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: default
+spec:
+  name: "/"  # Default vhost
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: mikrotik-system
+spec:
+  name: mikrotik-system
+  rabbitmqClusterReference:
+    name: rabbitmq

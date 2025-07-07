@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-proxy
+  namespace: dragonfly-system
+spec:
+  selector:
+    app: dragonfly
+    component: dfdaemon
+  ports:
+  - name: proxy
+    port: 65001
+    targetPort: 65001
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-proxy-nodeport
+  namespace: dragonfly-system
+spec:
+  selector:
+    app: dragonfly
+    component: dfdaemon
+  ports:
+  - name: proxy
+    port: 65001
+    targetPort: 65001
+    nodePort: 30001
+  type: NodePort
