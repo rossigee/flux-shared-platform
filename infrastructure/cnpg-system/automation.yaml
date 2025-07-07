@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: cloudnative-pg
+spec:
+  image: ghcr.io/cloudnative-pg/cloudnative-pg
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: cloudnative-pg
+spec:
+  imageRepositoryRef:
+    name: cloudnative-pg
+  policy:
+    semver:
+      range: '>=1.25.0'
