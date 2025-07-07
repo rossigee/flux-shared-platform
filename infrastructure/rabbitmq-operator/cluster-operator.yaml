@@ -1,0 +1,25 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: rabbitmq-cluster-operator
+  namespace: rabbitmq-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: rabbitmq-cluster-operator
+    namespace: rabbitmq-system
+  path: "./config/crd"
+  prune: true
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: rabbitmq-cluster-operator
+  namespace: rabbitmq-system
+spec:
+  interval: 10m
+  url: https://github.com/rabbitmq/cluster-operator
+  ref:
+    tag: v2.11.0
