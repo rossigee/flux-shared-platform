@@ -9,7 +9,7 @@ metadata:
     policies.kyverno.io/severity: "high"
     policies.kyverno.io/description: >-
       Restricts container images to approved registries only: harbor.golder.lan
-      (internal), ghcr.io, docker.io, hashicorp, goharbor, docker.gitea.com, quay.io,
+      (internal), ghcr.io, vaultwarden/*, hashicorp, goharbor, docker.gitea.com, quay.io,
       gcr.io, registry.k8s.io, and public.ecr.aws to prevent use of untrusted
       image sources.
 spec:
@@ -32,11 +32,11 @@ spec:
         pattern:
           spec:
             containers:
-            - image: "harbor.golder.lan/* | ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "harbor.golder.lan/* | ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
             =(initContainers):
-            - image: "harbor.golder.lan/* | ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "harbor.golder.lan/* | ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
             =(ephemeralContainers):
-            - image: "harbor.golder.lan/* | ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "harbor.golder.lan/* | ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -76,7 +76,7 @@ spec:
         # Allow public registries without secrets
         - spec:
             containers:
-            - image: "ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
         # Require secrets for private registry
         - spec:
             containers:
