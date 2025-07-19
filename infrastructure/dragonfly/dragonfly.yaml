@@ -24,7 +24,7 @@ spec:
 
     # Use dedicated Dragonfly Valkey instance
     externalRedis:
-      host: "dragonfly-valkey.dragonfly-system.svc.cluster.local"
+      host: "valkey.dragonfly-system.svc.cluster.local"
       port: 6379
       # password: configured via cluster-specific External Secrets
 
