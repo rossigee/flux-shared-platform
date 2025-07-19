@@ -1,0 +1,389 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-pod-security-standards
+  annotations:
+    policies.kyverno.io/title: "Pod Security Standards"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Enforces pod security standards: disallows privileged containers,
+      requires non-root execution, blocks host network/PID access,
+      and mandates security contexts on all workloads.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    # Disallow privileged containers
+    - name: check-privileged
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            - StatefulSet
+            - Job
+            operations:
+            - CREATE
+            - UPDATE
+      validate:
+        message: "Privileged containers are not allowed"
+        pattern:
+          spec:
+            =(securityContext):
+              =(privileged): "false"
+            containers:
+            - =(securityContext):
+                =(privileged): "false"
+
+    # Require non-root containers
+    - name: require-run-as-non-root
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            - StatefulSet
+            - Job
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - cert-manager
+          - longhorn-system
+      validate:
+        message: "Containers must run as non-root"
+        pattern:
+          spec:
+            =(securityContext):
+              runAsNonRoot: true
+            containers:
+            - =(securityContext):
+                =(runAsNonRoot): true
+
+    # Disallow host network
+    - name: disallow-host-network
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - cilium
+      validate:
+        message: "Host network is not allowed"
+        pattern:
+          spec:
+            =(hostNetwork): "false"
+
+    # Disallow host PID
+    - name: disallow-host-pid
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            operations:
+            - CREATE
+            - UPDATE
+      validate:
+        message: "Host PID is not allowed"
+        pattern:
+          spec:
+            =(hostPID): "false"
+
+    # Require security context
+    - name: require-security-context
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            - StatefulSet
+            - Job
+            operations:
+            - CREATE
+            - UPDATE
+      validate:
+        message: "Security context is required"
+        deny:
+          conditions:
+            all:
+            - key: "{{ request.object.spec.securityContext || '' }}"
+              operator: Equals
+              value: ""
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits
+  annotations:
+    policies.kyverno.io/title: "Resource Requirements"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Requires all containers in Deployments, StatefulSets, and DaemonSets
+      to define CPU and memory requests and limits to ensure proper resource
+      allocation and prevent resource starvation.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    # Require resource requests and limits
+    - name: validate-resources
+      match:
+        any:
+        - resources:
+            kinds:
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - flux-system
+      validate:
+        message: "Resource requests and limits are required"
+        pattern:
+          spec:
+            template:
+              spec:
+                containers:
+                - name: "*"
+                  resources:
+                    requests:
+                      memory: "?*"
+                      cpu: "?*"
+                    limits:
+                      memory: "?*"
+                      cpu: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-default-namespace
+  annotations:
+    policies.kyverno.io/title: "Disallow Default Namespace"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Prevents creation of resources in the 'default' namespace to encourage
+      proper namespace organization and avoid accidental deployments.
+      Allows deletion of all resources except the default kubernetes service.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: disallow-default-namespace-creation
+      match:
+        any:
+        - resources:
+            kinds:
+            - "*"
+            namespaces:
+            - default
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        any:
+        - resources:
+            kinds:
+            - Service
+            names:
+            - kubernetes
+      validate:
+        message: "Creating or updating resources in 'default' namespace is not allowed"
+        deny: {}
+    - name: protect-default-kubernetes-service
+      match:
+        any:
+        - resources:
+            kinds:
+            - Service
+            names:
+            - kubernetes
+            namespaces:
+            - default
+            operations:
+            - DELETE
+      validate:
+        message: "Deleting the default 'kubernetes' service is not allowed"
+        deny: {}
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-network-policies
+  annotations:
+    policies.kyverno.io/title: "Require Network Policies"
+    policies.kyverno.io/category: "Network Security"
+    policies.kyverno.io/severity: "low"
+    policies.kyverno.io/description: >-
+      Validates that namespaces have network policies defined (audit mode).
+      Checks for 'network-policy: enabled' label to ensure network
+      segmentation is properly configured.
+spec:
+  validationFailureAction: Audit  # Start with audit mode
+  background: true
+  rules:
+    - name: check-network-policy
+      match:
+        any:
+        - resources:
+            kinds:
+            - Namespace
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - kube-public
+          - kube-node-lease
+          - default
+      validate:
+        message: "Namespace should have NetworkPolicy defined"
+        pattern:
+          metadata:
+            labels:
+              network-policy: "enabled"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+  annotations:
+    policies.kyverno.io/title: "Disallow Latest Tag"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Prevents use of ':latest' tag and encourages specific version tags
+      or SHA digests for container images to ensure reproducible deployments
+      and avoid unexpected updates.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-image-tag
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Job
+            - CronJob
+      validate:
+        message: "Images must specify a tag and not use ':latest'"
+        pattern:
+          spec:
+            containers:
+            - image: "!*:latest"
+            =(initContainers):
+            - image: "!*:latest"
+    - name: require-digest-or-semver
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Job
+            - CronJob
+      exclude:
+        resources:
+          namespaces:
+          - flux-system  # Flux handles image automation
+      validate:
+        message: "Images should use digest (@sha256:...) or semantic version tags"
+        pattern:
+          spec:
+            containers:
+            - image: "*:?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-pod-probes
+  annotations:
+    policies.kyverno.io/title: "Require Pod Probes"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: "low"
+    policies.kyverno.io/description: >-
+      Requires liveness and readiness probes on containers in Deployments,
+      StatefulSets, and DaemonSets to ensure proper health checking and
+      traffic management (audit mode).
+spec:
+  validationFailureAction: Audit  # Start with audit to identify violations
+  background: true
+  rules:
+    - name: validate-livenessProbe
+      match:
+        any:
+        - resources:
+            kinds:
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - flux-system
+      validate:
+        message: "Liveness probe is required"
+        pattern:
+          spec:
+            template:
+              spec:
+                containers:
+                - livenessProbe:
+                    "?*"
+    - name: validate-readinessProbe
+      match:
+        any:
+        - resources:
+            kinds:
+            - Deployment
+            - StatefulSet
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - flux-system
+      validate:
+        message: "Readiness probe is required for services"
+        pattern:
+          spec:
+            template:
+              spec:
+                containers:
+                - readinessProbe:
+                    "?*"

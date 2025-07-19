@@ -1,0 +1,71 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: container-security-standards
+  annotations:
+    policies.kyverno.io/title: "Container Security Standards"
+    policies.kyverno.io/category: "Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Enforces container security standards: no privileged containers,
+      no root user, no host namespaces. Allows images from approved
+      registries including harbor.golder.lan.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    - name: disallow-privileged-containers
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+      validate:
+        message: "Privileged containers are not allowed"
+        pattern:
+          spec:
+            =(securityContext):
+              =(privileged): "false"
+            containers:
+            - name: "*"
+              =(securityContext):
+                =(privileged): "false"
+
+    - name: require-non-root-user
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+      exclude:
+        any:
+        - resources:
+            namespaces:
+            - kube-system
+            - longhorn-system
+            - keycloak  # Keycloak requires specific UIDs
+      validate:
+        message: "Running as root user is not allowed"
+        pattern:
+          spec:
+            =(securityContext):
+              =(runAsUser): ">0"
+            containers:
+            - name: "*"
+              =(securityContext):
+                =(runAsUser): ">0"
+
+    - name: disallow-host-namespaces
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+      validate:
+        message: "Sharing host namespaces is not allowed"
+        pattern:
+          spec:
+            =(hostNetwork): "false"
+            =(hostPID): "false"
+            =(hostIPC): "false"

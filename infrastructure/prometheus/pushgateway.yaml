@@ -1,0 +1,32 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: pushgateway
+  annotations:
+    kubernetes.io/description: "Prometheus pushgateway for short-lived job metrics collection"
+spec:
+  interval: 18m
+  chart:
+    spec:
+      chart: prometheus-pushgateway
+      version: 2.11.0
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus
+        namespace: flux-system
+  values: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway
+  labels:
+    app: pushgateway
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9091
+    name: http
+  selector:
+    app: pushgateway

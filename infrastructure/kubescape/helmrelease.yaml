@@ -6,7 +6,7 @@ metadata:
   annotations:
     kubernetes.io/description: "Kubescape provides comprehensive Kubernetes security posture management with vulnerability scanning and compliance checks"
 spec:
-  interval: 20m
+  interval: 18m
   chart:
     spec:
       chart: kubescape-operator
@@ -16,15 +16,64 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
+    global:
+      clusterName: "CLUSTER_NAME_PLACEHOLDER"
     capabilities:
       relevancy: enable
       configurationScan: enable
       continuousScan: disable
       vulnerabilityScan: enable
-      nodeScan: enable
+      nodeScan: disable
+
+    # Completely disable nodeAgent to avoid host access violations
+    nodeAgent:
+      enabled: false
+
+    # Security hardening for Kyverno policy compliance
     operator:
       image:
-        tag: "v1.0.55"
-    gateway:
+        tag: "v3.0.19"  # Explicit tag instead of latest
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      serviceAccount:
+        automountServiceAccountToken: false
+
+    kubescape:
       image:
-        tag: "v1.0.55"
+        tag: "v3.0.19"  # Explicit tag instead of latest
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      serviceAccount:
+        automountServiceAccountToken: false
+
+    kollector:
+      image:
+        tag: "v1.24.17"  # Explicit tag instead of latest
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      serviceAccount:
+        automountServiceAccountToken: false

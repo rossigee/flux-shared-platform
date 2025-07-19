@@ -1,0 +1,33 @@
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: kyverno-admission-controller-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Deployment
+        - StatefulSet
+        - DaemonSet
+        namespaces:
+        - kyverno

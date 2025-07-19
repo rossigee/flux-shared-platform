@@ -1,0 +1,47 @@
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: crossplane-providers-enhanced-exception
+  namespace: crossplane-system
+spec:
+  exceptions:
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  match:
+    any:
+    - resources:
+        kinds:
+        - Deployment
+        - Pod
+        - ReplicaSet
+        names:
+        - "provider-keycloak"
+        - "provider-keycloak-controller"
+        - "crossplane"
+        - "crossplane-rbac-manager"
+        namespaces:
+        - crossplane-system

@@ -1,0 +1,241 @@
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cnpg-postgres-exception
+  namespace: gitea
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: rbac-best-practices
+    ruleNames:
+    - require-subjects
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - RoleBinding
+        names:
+        - "gitea-db*"
+        namespaces:
+        - gitea
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cnpg-argo-workflows-exception
+  namespace: argo-workflows
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: rbac-best-practices
+    ruleNames:
+    - require-subjects
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Job
+        - RoleBinding
+        - ServiceAccount
+        - Role
+        namespaces:
+        - argo-workflows
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cnpg-netbox-exception
+  namespace: netbox
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: rbac-best-practices
+    ruleNames:
+    - require-subjects
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - RoleBinding
+        - Job
+        names:
+        - "netbox-db*"
+        namespaces:
+        - netbox
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cnpg-sftpgo-exception
+  namespace: sftpgo
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: rbac-best-practices
+    ruleNames:
+    - require-subjects
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - RoleBinding
+        - Job
+        names:
+        - "sftpgo-db*"
+        namespaces:
+        - sftpgo
+
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: cnpg-vaultwarden-exception
+  namespace: vaultwarden
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: rbac-best-practices
+    ruleNames:
+    - require-subjects
+    - restrict-wildcard-verbs
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - RoleBinding
+        - Job
+        - Role
+        - ServiceAccount
+        names:
+        - "vaultwarden-db*"
+        namespaces:
+        - vaultwarden

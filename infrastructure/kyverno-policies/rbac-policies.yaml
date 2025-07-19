@@ -1,0 +1,129 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: rbac-best-practices
+  annotations:
+    policies.kyverno.io/title: "RBAC Best Practices"
+    policies.kyverno.io/category: "Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Enforces RBAC best practices: prevents direct use of cluster-admin role,
+      requires subjects in role bindings, and disallows wildcard (*) verbs
+      in custom roles to implement least privilege access control.
+spec:
+  validationFailureAction: audit
+  background: true
+  rules:
+    # Disallow use of cluster-admin
+    - name: restrict-cluster-admin
+      match:
+        any:
+        - resources:
+            kinds:
+            - ClusterRoleBinding
+      validate:
+        message: "cluster-admin role should not be used directly"
+        pattern:
+          roleRef:
+            name: "!cluster-admin"
+
+    # Require subjects in role bindings
+    - name: require-subjects
+      match:
+        any:
+        - resources:
+            kinds:
+            - RoleBinding
+            - ClusterRoleBinding
+      exclude:
+        any:
+        - resources:
+            names:
+            - "postgres-*"
+            - "*-postgres-*"
+            - "vaultwarden-db*"
+            - "gitea-db*"
+            - "netbox-db*"
+            - "sftpgo-db*"
+        - resources:
+            annotations:
+              "cnpg.io/operatorVersion": "?*"
+      validate:
+        message: "RoleBindings must specify subjects"
+        pattern:
+          subjects:
+          - "?*"
+
+    # Prevent wildcard permissions
+    - name: restrict-wildcard-verbs
+      match:
+        any:
+        - resources:
+            kinds:
+            - Role
+            - ClusterRole
+      exclude:
+        any:
+        - resources:
+            names:
+            - "system:*"
+            - "kubernetes-*"
+            - "postgres-*"
+            - "*-postgres-*"
+            - "vaultwarden-db*"
+            - "gitea-db*"
+            - "netbox-db*"
+            - "sftpgo-db*"
+        - resources:
+            annotations:
+              "cnpg.io/operatorVersion": "?*"
+      validate:
+        message: "Wildcard verbs (*) in roles are not allowed"
+        pattern:
+          =(rules):
+          - verbs:
+            - "!*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: service-account-best-practices
+  annotations:
+    policies.kyverno.io/title: "Service Account Best Practices"
+    policies.kyverno.io/category: "Security"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Requires automountServiceAccountToken to be explicitly set to false
+      on pods unless specifically needed, reducing the attack surface by
+      preventing unnecessary token exposure in containers.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    # Disallow automountServiceAccountToken by default
+    - name: disable-automount-sa-token
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - flux-system
+          - cert-manager
+          - external-secrets
+          - crossplane-system
+      validate:
+        message: "automountServiceAccountToken should be set to false unless needed"
+        pattern:
+          spec:
+            =(automountServiceAccountToken): false
+            =(template):
+              spec:
+                =(automountServiceAccountToken): false

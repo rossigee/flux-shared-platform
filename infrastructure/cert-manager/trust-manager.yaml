@@ -1,0 +1,23 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: trust-manager
+  annotations:
+    kubernetes.io/description: "Trust Manager distributes trust bundles across the cluster for TLS certificate validation"
+spec:
+  interval: 18m
+  chart:
+    spec:
+      chart: trust-manager
+      version: v0.17.1
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: flux-system
+  values:
+    secretTargets:
+      enabled: true
+      authorizedSecretsAll: true
+    app:
+      logFormat: json

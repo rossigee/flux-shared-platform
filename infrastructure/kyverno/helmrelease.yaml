@@ -6,42 +6,105 @@ metadata:
   annotations:
     kubernetes.io/description: "Kyverno provides policy-based security and configuration management for Kubernetes resources"
 spec:
-  interval: 20m
+  interval: 18m
+  timeout: 5m
   chart:
     spec:
       chart: kyverno
-      version: 3.2.6
+      version: "3.3.8"  # Latest stable version
       sourceRef:
         kind: HelmRepository
         name: kyverno
         namespace: flux-system
   values:
-    admissionController:
-      replicas: 2
+    # Resource configuration to prevent OOMKilled
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+
+    # Init container resources
+    initContainer:
       resources:
         limits:
-          memory: 384Mi
+          cpu: 200m
+          memory: 512Mi
         requests:
           cpu: 100m
-          memory: 128Mi
+          memory: 256Mi
+
+    # Security configuration
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 10001
+      fsGroup: 10001
+      seccompProfile:
+        type: RuntimeDefault
+
+    # Performance and reliability settings
+    replicaCount: 1
+
+    # Enable background policy scanning but with limits
     backgroundController:
+      enabled: true
       resources:
         limits:
-          memory: 128Mi
+          cpu: 500m
+          memory: 512Mi
         requests:
           cpu: 100m
-          memory: 64Mi
-    cleanupController:
-      resources:
-        limits:
-          memory: 128Mi
-        requests:
-          cpu: 100m
-          memory: 64Mi
+          memory: 256Mi
+
+    # Enable reports controller for policy violations
     reportsController:
+      enabled: true
       resources:
         limits:
-          memory: 128Mi
+          cpu: 200m
+          memory: 256Mi
         requests:
-          cpu: 100m
-          memory: 64Mi
+          cpu: 50m
+          memory: 128Mi
+
+    # Cleanup controller for resource management
+    cleanupController:
+      enabled: true
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+
+    # Webhook configuration
+    webhooksCleanup:
+      enabled: true
+
+    # Features configuration
+    features:
+      admissionReports:
+        enabled: true
+      backgroundReports:
+        enabled: true
+      policyExceptions:
+        enabled: true
+      configMapCaching:
+        enabled: true
+
+    # Metrics and monitoring
+    metricsConfig:
+      enabled: true
+
+    # Node affinity to prefer scheduling on worker nodes
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: node-role.kubernetes.io/control-plane
+              operator: DoesNotExist

@@ -1,0 +1,98 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pvc-best-practices
+  annotations:
+    policies.kyverno.io/title: "PVC Best Practices"
+    policies.kyverno.io/category: "Storage"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Enforces PersistentVolumeClaim best practices: requires storageClassName
+      and accessModes to be specified, and prevents use of deprecated
+      'longhorn' storage class in favor of 'lvmpv-xfs' or 'lvmpv-ext4'.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    # Require storage class for PVCs
+    - name: require-storage-class
+      match:
+        any:
+        - resources:
+            kinds:
+            - PersistentVolumeClaim
+      validate:
+        message: "PVC must specify a storageClassName"
+        pattern:
+          spec:
+            storageClassName: "?*"
+
+    # Require access modes
+    - name: require-access-modes
+      match:
+        any:
+        - resources:
+            kinds:
+            - PersistentVolumeClaim
+      validate:
+        message: "PVC must specify accessModes"
+        pattern:
+          spec:
+            accessModes:
+            - "?*"
+
+    # Enforce allowed storage classes
+    - name: allowed-storage-classes
+      match:
+        any:
+        - resources:
+            kinds:
+            - PersistentVolumeClaim
+      validate:
+        message: "Only approved storage class is: csi-driver-lvm-linear"
+        pattern:
+          spec:
+            storageClassName: "csi-driver-lvm-linear"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: statefulset-storage-policies
+  annotations:
+    policies.kyverno.io/title: "StatefulSet Storage Policies"
+    policies.kyverno.io/category: "Storage"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Requires StatefulSets to use volumeClaimTemplates for persistent storage
+      with approved storage classes (lvmpv-xfs or lvmpv-ext4) to ensure
+      proper data persistence and performance.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    # Require PVC templates for StatefulSets
+    - name: require-volume-claim-templates
+      match:
+        any:
+        - resources:
+            kinds:
+            - StatefulSet
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+      validate:
+        message: "StatefulSets should use volumeClaimTemplates for persistent storage"
+        pattern:
+          spec:
+            =(volumeClaimTemplates):
+            - metadata:
+                name: "?*"
+              spec:
+                storageClassName: "csi-driver-lvm-linear"
+                accessModes:
+                - "?*"
+                resources:
+                  requests:
+                    storage: "?*"

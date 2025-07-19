@@ -1,0 +1,99 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-state-metrics
+  annotations:
+    kubernetes.io/description: "Kubernetes metrics exporter for cluster observability and monitoring"
+spec:
+  interval: 18m
+  chart:
+    spec:
+      chart: kube-state-metrics
+      version: 5.25.1
+      sourceRef:
+        kind: HelmRepository
+        name: chart-prometheus
+        namespace: flux-system
+  values:
+    # Resource constraints for efficiency
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    
+    # Security hardening
+    securityContext:
+      enabled: true
+      runAsUser: 65534
+      runAsGroup: 65534
+      runAsNonRoot: true
+      fsGroup: 65534
+      seccompProfile:
+        type: RuntimeDefault
+    
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 65534
+      seccompProfile:
+        type: RuntimeDefault
+    
+    # Focus on metrics needed for rightsizing and monitoring
+    collectors:
+      - certificatesigningrequests
+      - configmaps
+      - cronjobs
+      - daemonsets
+      - deployments
+      - endpoints
+      - horizontalpodautoscalers
+      - ingresses
+      - jobs
+      - leases
+      - limitranges
+      - namespaces
+      - networkpolicies
+      - nodes
+      - persistentvolumeclaims
+      - persistentvolumes
+      - poddisruptionbudgets
+      - pods
+      - replicasets
+      - replicationcontrollers
+      - resourcequotas
+      - secrets
+      - services
+      - statefulsets
+      - storageclasses
+      - validatingwebhookconfigurations
+      - volumeattachments
+    
+    # Enable self-monitoring
+    selfMonitor:
+      enabled: true
+    
+    # Service configuration for Prometheus discovery
+    service:
+      type: ClusterIP
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    
+    # Node affinity for TH region if needed
+    nodeSelector:
+      kubernetes.io/os: linux
+    
+    # Deployment settings
+    replicas: 1
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1

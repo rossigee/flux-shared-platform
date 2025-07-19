@@ -2,9 +2,9 @@
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: email-exchange
+  name: scratchmail-exchange
 spec:
-  name: email-exchange
+  name: scratchmail
   vhost: "/"
   type: direct
   durable: true

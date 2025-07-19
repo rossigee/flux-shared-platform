@@ -1,0 +1,82 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: flux-multi-tenancy
+  annotations:
+    policies.kyverno.io/title: "Flux Multi-Tenancy Policy"
+    policies.kyverno.io/category: "Flux"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Enforces multi-tenancy for Flux resources by requiring serviceAccountName
+      on all Kustomizations and HelmReleases, and ensuring sourceRef.namespace
+      matches the resource namespace to prevent cross-namespace access.
+spec:
+  validationFailureAction: enforce
+  rules:
+    # Require serviceAccountName for all Flux resources
+    - name: serviceAccountName
+      exclude:
+        resources:
+          namespaces:
+            - kube-system
+            - flux-system
+            - netbox
+            - vault
+            - prometheus-operator
+            - cert-manager
+            - external-secrets
+            - crossplane-system
+            - keycloak
+      match:
+        resources:
+          kinds:
+            - Kustomization
+            - HelmRelease
+      validate:
+        message: ".spec.serviceAccountName is required"
+        pattern:
+          spec:
+            serviceAccountName: "?*"
+
+    # Kustomization sourceRef validation
+    - name: kustomization-sourceRefNamespace
+      exclude:
+        resources:
+          namespaces:
+            - flux-system
+            - kube-system
+            - crossplane-system
+      match:
+        resources:
+          kinds:
+            - Kustomization
+      validate:
+        message: "spec.sourceRef.namespace must be the same as metadata.namespace for Kustomizations"
+        deny:
+          conditions:
+            - key: "{{ request.object.spec.sourceRef.namespace }}"
+              operator: NotEquals
+              value: "{{ request.object.metadata.namespace }}"
+
+    # HelmRelease sourceRef validation (different path)
+    - name: helmrelease-sourceRefNamespace
+      exclude:
+        resources:
+          namespaces:
+            - flux-system
+            - kube-system
+            - crossplane-system
+            - keycloak
+            - gitea
+      match:
+        resources:
+          kinds:
+            - HelmRelease
+      validate:
+        message: "spec.chart.spec.sourceRef.namespace must be the same as metadata.namespace for HelmReleases"
+        deny:
+          conditions:
+            - key: "{{ request.object.spec.chart.spec.sourceRef.namespace }}"
+              operator: NotEquals
+              value: "{{ request.object.metadata.namespace }}"

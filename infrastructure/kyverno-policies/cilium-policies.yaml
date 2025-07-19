@@ -1,0 +1,59 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: cilium-network-policies
+  annotations:
+    policies.kyverno.io/title: "Cilium Network Policies"
+    policies.kyverno.io/category: "Network Security"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Automatically generates default-deny Cilium network policies for new
+      namespaces and recommends egress rules for better security. Ensures
+      proper network segmentation with Cilium's eBPF-based enforcement.
+spec:
+  validationFailureAction: audit
+  background: true
+  rules:
+    # Require Cilium network policies for new namespaces
+    - name: require-cilium-policies
+      match:
+        any:
+        - resources:
+            kinds:
+            - Namespace
+      exclude:
+        resources:
+          names:
+          - default
+          - kube-system
+          - kube-public
+          - kube-node-lease
+      generate:
+        apiVersion: cilium.io/v2
+        kind: CiliumNetworkPolicy
+        name: default-deny-ingress
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        data:
+          spec:
+            description: "Default deny all ingress traffic"
+            endpointSelector: {}
+            ingress:
+            - fromEndpoints:
+              - matchLabels:
+                  k8s:io.kubernetes.pod.namespace: "{{request.object.metadata.name}}"
+
+    # Recommend egress policies
+    - name: check-egress-policies
+      match:
+        any:
+        - resources:
+            kinds:
+            - CiliumNetworkPolicy
+      validate:
+        message: "Consider defining egress rules for better security"
+        pattern:
+          spec:
+            =(egress):
+            - "?*"

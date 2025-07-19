@@ -1,0 +1,45 @@
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: crossplane-providers-exception
+  namespace: crossplane-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+    summary: "Allow Crossplane providers to run with required privileges"
+    description: "Crossplane provider controllers need special permissions and configurations that violate standard security policies"
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  match:
+    any:
+    - resources:
+        kinds:
+        - Deployment
+        - Pod
+        names:
+        - "provider-*"
+        - "crossplane"
+        - "crossplane-*"
+        - "*crossplane*"
+        - "*rbac-manager*"
+        namespaces:
+        - crossplane-system

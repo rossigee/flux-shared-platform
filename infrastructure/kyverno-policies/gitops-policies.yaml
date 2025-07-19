@@ -1,0 +1,118 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: gitops-best-practices
+  annotations:
+    policies.kyverno.io/title: "GitOps Best Practices"
+    policies.kyverno.io/category: "Flux"
+    policies.kyverno.io/severity: "medium"
+    policies.kyverno.io/description: >-
+      Enforces GitOps best practices: requires explicit prune settings,
+      health checks, timeouts, and retry configurations for Flux
+      Kustomizations and HelmReleases to ensure reliable deployments.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    # Require prune to be explicitly set
+    - name: require-prune-setting
+      match:
+        any:
+        - resources:
+            kinds:
+            - Kustomization
+      validate:
+        message: "Prune must be explicitly set (true or false)"
+        pattern:
+          spec:
+            prune: "?*"
+
+    # Require health checks
+    - name: require-health-checks
+      match:
+        any:
+        - resources:
+            kinds:
+            - Kustomization
+      exclude:
+        resources:
+          namespaces:
+          - flux-system
+      validate:
+        message: "Health checks should be defined for Kustomizations"
+        pattern:
+          spec:
+            =(healthChecks):
+            - "?*"
+
+    # Require timeout configuration
+    - name: require-timeout
+      match:
+        any:
+        - resources:
+            kinds:
+            - Kustomization
+            - HelmRelease
+      validate:
+        message: "Timeout must be specified"
+        pattern:
+          spec:
+            timeout: "?*"
+
+    # Require retry configuration for HelmReleases
+    - name: require-helm-retries
+      match:
+        any:
+        - resources:
+            kinds:
+            - HelmRelease
+      validate:
+        message: "HelmRelease should specify install/upgrade retries"
+        pattern:
+          spec:
+            =(install):
+              =(remediation):
+                =(retries): "?*"
+            =(upgrade):
+              =(remediation):
+                =(retries): "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-gitops-annotations
+  annotations:
+    policies.kyverno.io/title: "GitOps Annotations"
+    policies.kyverno.io/category: "Flux"
+    policies.kyverno.io/severity: "low"
+    policies.kyverno.io/description: >-
+      Recommends adding 'kustomize.toolkit.fluxcd.io/reconcile: disabled'
+      annotation to manually managed ConfigMaps and Secrets to prevent
+      Flux from overwriting manual changes (audit mode).
+spec:
+  validationFailureAction: audit
+  background: true
+  rules:
+    # Recommend flux ignore annotation for manually managed resources
+    - name: check-manual-resources
+      match:
+        any:
+        - resources:
+            kinds:
+            - ConfigMap
+            - Secret
+      exclude:
+        resources:
+          namespaces:
+          - flux-system
+          - kube-system
+          selector:
+            matchLabels:
+              "kustomize.toolkit.fluxcd.io/name": "*"
+      validate:
+        message: "Consider adding 'kustomize.toolkit.fluxcd.io/reconcile: disabled' annotation for manually managed resources"
+        pattern:
+          metadata:
+            =(annotations):
+              =(kustomize.toolkit.fluxcd.io/reconcile): "disabled"

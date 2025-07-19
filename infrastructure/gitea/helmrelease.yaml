@@ -6,8 +6,45 @@ metadata:
   annotations:
     kubernetes.io/description: "Self-hosted Git service with web interface"
 spec:
-  interval: 20m
+  interval: 18m
+  timeout: 5m
+  serviceAccountName: helm-controller
   chartRef:
     kind: OCIRepository
     name: gitea
     namespace: flux-system
+  values:
+    # Disable embedded databases - use external CNPG PostgreSQL and Valkey/Redis
+    redis-cluster:
+      enabled: false
+    postgresql-ha:
+      enabled: false
+    postgresql:
+      enabled: false
+    
+    # Configure Gitea to use external Valkey service
+    deployment:
+      env:
+        - name: GITEA__queue__TYPE
+          value: redis
+        - name: GITEA__queue__CONN_STR
+          valueFrom:
+            secretKeyRef:
+              name: gitea-config
+              key: redis_connection_string
+        - name: GITEA__session__PROVIDER
+          value: redis
+        - name: GITEA__session__PROVIDER_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: gitea-config
+              key: redis_connection_string
+        - name: GITEA__cache__ENABLED
+          value: "true"
+        - name: GITEA__cache__ADAPTER
+          value: redis
+        - name: GITEA__cache__HOST
+          valueFrom:
+            secretKeyRef:
+              name: gitea-config
+              key: redis_connection_string

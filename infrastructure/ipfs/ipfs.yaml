@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipfs-daemon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ipfs-daemon
+  template:
+    metadata:
+      labels:
+        app: ipfs-daemon
+    spec:
+      containers:
+      - name: ipfs-daemon
+        image: ipfs/go-ipfs:latest
+        ports:
+        - containerPort: 4001
+        volumeMounts:
+        - name: ipfs-data
+          mountPath: /data/ipfs
+      volumes:
+      - name: ipfs-data
+        persistentVolumeClaim:
+          claimName: ipfs

@@ -1,0 +1,47 @@
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: keycloak-deployment-exception
+  namespace: keycloak
+spec:
+  exceptions:
+  - policyName: allowed-image-registries
+    ruleNames:
+    - validate-registries
+  - policyName: disallow-latest-tag
+    ruleNames:
+    - require-image-tag
+    - require-digest-or-semver
+  - policyName: require-pod-security-standards
+    ruleNames:
+    - check-privileged
+    - require-run-as-non-root
+    - require-security-context
+  - policyName: require-resource-limits
+    ruleNames:
+    - validate-resources
+  - policyName: require-pod-probes
+    ruleNames:
+    - validate-livenessProbe
+    - validate-readinessProbe
+  - policyName: require-image-pull-secrets
+    ruleNames:
+    - validate-imagepullsecrets
+  - policyName: resource-requirements
+    ruleNames:
+    - autogen-require-pod-resources
+  match:
+    any:
+    - resources:
+        kinds:
+        - StatefulSet
+        - Deployment
+        - Pod
+        - ReplicaSet
+        - Job
+        - CronJob
+        names:
+        - "keycloak*"
+        namespaces:
+        - keycloak

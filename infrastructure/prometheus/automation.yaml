@@ -1,0 +1,83 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: prometheus
+spec:
+  image: prom/prometheus
+  interval: 18m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: prometheus
+spec:
+  imageRepositoryRef:
+    name: prometheus
+  policy:
+    semver:
+      range: '>=v2.45.0'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: alertmanager
+spec:
+  image: prom/alertmanager
+  interval: 18m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: alertmanager
+spec:
+  imageRepositoryRef:
+    name: alertmanager
+  policy:
+    semver:
+      range: '>=v0.26.0'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: pushgateway
+spec:
+  image: prom/pushgateway
+  interval: 18m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: pushgateway
+spec:
+  imageRepositoryRef:
+    name: pushgateway
+  policy:
+    semver:
+      range: '>=v1.0.0'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: blackbox-exporter
+spec:
+  image: prom/blackbox-exporter
+  interval: 18m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: blackbox-exporter
+spec:
+  imageRepositoryRef:
+    name: blackbox-exporter
+  policy:
+    semver:
+      range: '>=v0.24.0'

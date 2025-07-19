@@ -1,0 +1,155 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mariadb
+  annotations:
+    kubernetes.io/description: "MariaDB database server with monitoring and backup capabilities"
+spec:
+  interval: 18m
+  chart:
+    spec:
+      chart: mariadb
+      version: 19.0.7
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  values:
+    # Image configuration
+    image:
+      tag: "10.11.10-debian-12-r0"
+      pullPolicy: IfNotPresent
+    
+    # Architecture (standalone for simplicity)
+    architecture: standalone
+    
+    # Authentication configuration (use external secrets)
+    auth:
+      existingSecret: "mariadb"
+      secretKeys:
+        rootPassword: "mariadb-root-password"
+        password: "mariadb-password"
+        replicationPassword: "mariadb-replication-password"
+    
+    # Database configuration
+    primary:
+      configuration: |-
+        [mysqld]
+        skip-name-resolve
+        explicit_defaults_for_timestamp
+        basedir=/opt/bitnami/mariadb
+        plugin_dir=/opt/bitnami/mariadb/plugin
+        port=3306
+        socket=/opt/bitnami/mariadb/tmp/mysql.sock
+        tmpdir=/opt/bitnami/mariadb/tmp
+        max_allowed_packet=16M
+        bind-address=*
+        pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+        log-error=/opt/bitnami/mariadb/logs/mysqld.log
+        character-set-server=UTF8
+        collation-server=utf8_general_ci
+        slow_query_log=0
+        slow_query_log_file=/opt/bitnami/mariadb/logs/mysqld.log
+        long_query_time=10.0
+        
+        [client]
+        port=3306
+        socket=/opt/bitnami/mariadb/tmp/mysql.sock
+        default-character-set=UTF8
+        plugin_dir=/opt/bitnami/mariadb/plugin
+        
+        [manager]
+        port=3306
+        socket=/opt/bitnami/mariadb/tmp/mysql.sock
+        pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      
+      # Resource constraints
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 100m
+        limits:
+          memory: 512Mi
+          cpu: 500m
+      
+      # Security context
+      podSecurityContext:
+        enabled: true
+        fsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      
+      containerSecurityContext:
+        enabled: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: false
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      
+      # Persistence configuration
+      persistence:
+        enabled: true
+        storageClass: ""  # Use default storage class
+        size: 8Gi
+    
+    # Service configuration
+    service:
+      type: ClusterIP
+      ports:
+        mysql: 3306
+    
+    # Metrics configuration for Prometheus
+    metrics:
+      enabled: true
+      image:
+        tag: "0.16.0-debian-12-r0"
+        pullPolicy: IfNotPresent
+      
+      # Service monitor for Prometheus
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        scrapeTimeout: 10s
+        labels:
+          app: mariadb
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "9104"
+      
+      # Resources for metrics exporter
+      resources:
+        requests:
+          memory: 16Mi
+          cpu: 10m
+        limits:
+          memory: 32Mi
+          cpu: 100m
+      
+      # Security context for metrics exporter
+      containerSecurityContext:
+        enabled: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+    
+    # Node selector for TH region if needed
+    nodeSelector:
+      kubernetes.io/os: linux
+    
+    # Tolerations and affinity can be added here if needed
+    tolerations: []
+    affinity: {}

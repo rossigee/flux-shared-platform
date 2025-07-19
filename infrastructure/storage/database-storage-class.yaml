@@ -1,0 +1,14 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-driver-lvm-linear-immediate
+  labels:
+    app.kubernetes.io/name: lvm-csi-driver
+    app.kubernetes.io/component: storage-class
+parameters:
+  type: linear
+provisioner: lvm.csi.metal-stack.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true

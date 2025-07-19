@@ -49,3 +49,39 @@ spec:
     write: ".*"
   rabbitmqClusterReference:
     name: rabbitmq
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scratchmail-rabbitmq-credentials
+type: Opaque
+stringData:
+  username: scratchmail
+  # Password will be populated by External Secrets
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: scratchmail
+spec:
+  tags:
+    - monitoring
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: scratchmail-rabbitmq-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: scratchmail-default-vhost
+spec:
+  vhost: "/"
+  userReference:
+    name: scratchmail
+  permissions:
+    configure: "scratchmail.*"
+    read: "scratchmail.*|email-.*"
+    write: "scratchmail.*|email-.*"
+  rabbitmqClusterReference:
+    name: rabbitmq

@@ -1,0 +1,85 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: allowed-image-registries
+  annotations:
+    policies.kyverno.io/title: "Allowed Image Registries"
+    policies.kyverno.io/category: "Supply Chain Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Restricts container images to approved registries only: harbor.golder.lan
+      (internal), ghcr.io, docker.io, hashicorp, goharbor, docker.gitea.com, quay.io,
+      gcr.io, registry.k8s.io, and public.ecr.aws to prevent use of untrusted
+      image sources.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    - name: validate-registries
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Job
+            - CronJob
+      validate:
+        message: "Images must be pulled from approved registries"
+        pattern:
+          spec:
+            containers:
+            - image: "harbor.golder.lan/* | ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            =(initContainers):
+            - image: "harbor.golder.lan/* | ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            =(ephemeralContainers):
+            - image: "harbor.golder.lan/* | ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-image-pull-secrets
+  annotations:
+    policies.kyverno.io/title: "Require Image Pull Secrets"
+    policies.kyverno.io/category: "Supply Chain Security"
+    policies.kyverno.io/severity: "low"
+    policies.kyverno.io/description: >-
+      Ensures that images from private registries (harbor.golder.lan) use
+      imagePullSecrets for authentication, while allowing public registries
+      without authentication (audit mode).
+spec:
+  validationFailureAction: audit  # Start with audit
+  background: true
+  rules:
+    - name: validate-imagepullsecrets
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Job
+            - CronJob
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - kube-public
+      validate:
+        message: "Images from private registries must use imagePullSecrets"
+        anyPattern:
+        # Allow public registries without secrets
+        - spec:
+            containers:
+            - image: "ghcr.io/* | docker.io/* | hashicorp/* | goharbor/* | docker.gitea.com/* | quay.io/* | gcr.io/* | registry.k8s.io/* | public.ecr.aws/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+        # Require secrets for private registry
+        - spec:
+            containers:
+            - image: "harbor.golder.lan/*"
+            imagePullSecrets:
+            - name: "?*"
