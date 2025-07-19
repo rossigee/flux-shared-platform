@@ -52,9 +52,12 @@ spec:
         fsGroup: 999
         seccompProfile:
           type: RuntimeDefault
+      # Image pull secrets for private registry
+      imagePullSecrets:
+        - name: harbor-credentials
       containers:
       - name: valkey
-        image: docker.io/valkey/valkey:7.2.7-alpine
+        image: harbor.golder.lan/dockerhub/valkey/valkey:7.2.7-alpine
         ports:
         - containerPort: 6379
           name: valkey
