@@ -3,6 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: kubescape
+  annotations:
+    kubernetes.io/description: "Kubescape security platform charts for Kubernetes security scanning and compliance"
 spec:
   interval: 60m
   url: https://kubescape.github.io/helm-charts

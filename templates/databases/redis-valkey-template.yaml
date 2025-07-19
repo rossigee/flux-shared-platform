@@ -155,7 +155,7 @@ metadata:
 data:
   redis.conf: |
     # Redis/Valkey Configuration
-    
+
     # Network
     bind 0.0.0.0
     protected-mode yes
@@ -163,13 +163,13 @@ data:
     tcp-backlog 511
     timeout 0
     tcp-keepalive 300
-    
+
     # General
     daemonize no
     pidfile /var/run/redis.pid
     loglevel notice
     databases 16
-    
+
     # Persistence (choose one strategy)
     # RDB snapshots
     save 900 1
@@ -180,7 +180,7 @@ data:
     rdbchecksum yes
     dbfilename dump.rdb
     dir /data
-    
+
     # AOF (Append Only File)
     appendonly yes
     appendfilename "appendonly.aof"
@@ -188,35 +188,35 @@ data:
     no-appendfsync-on-rewrite no
     auto-aof-rewrite-percentage 100
     auto-aof-rewrite-min-size 64mb
-    
+
     # Memory Management
     maxmemory MEMORY_LIMIT  # Replace with actual limit (e.g., 1gb)
     maxmemory-policy allkeys-lru
     maxmemory-samples 5
-    
+
     # Lazy freeing
     lazyfree-lazy-eviction no
     lazyfree-lazy-expire no
     lazyfree-lazy-server-del no
     replica-lazy-flush no
-    
+
     # Security
     requirepass ${REDIS_PASSWORD}
     rename-command FLUSHDB ""
     rename-command FLUSHALL ""
     rename-command KEYS ""
     rename-command CONFIG ""
-    
+
     # Clients
     maxclients 10000
-    
+
     # Slow log
     slowlog-log-slower-than 10000
     slowlog-max-len 128
-    
+
     # Event notification
     notify-keyspace-events ""
-    
+
     # Advanced config
     hash-max-ziplist-entries 512
     hash-max-ziplist-value 64
@@ -305,7 +305,7 @@ data:
   redis-cluster.conf: |
     # Include base config
     include /etc/redis/redis.conf
-    
+
     # Cluster-specific settings
     cluster-enabled yes
     cluster-config-file nodes.conf

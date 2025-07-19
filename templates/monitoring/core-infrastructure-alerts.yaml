@@ -20,7 +20,7 @@ spec:
           annotations:
             summary: "Prometheus configuration reload failed"
             description: "Prometheus {{ $labels.instance }} configuration reload has failed for more than 10 minutes."
-        
+
         - alert: PrometheusRuleEvaluationFailures
           expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
           for: 0m
@@ -30,7 +30,7 @@ spec:
           annotations:
             summary: "Prometheus rule evaluation failures"
             description: "Prometheus {{ $labels.instance }} has failed to evaluate {{ $value }} rules in the last 5 minutes."
-        
+
         - alert: PrometheusTargetDown
           expr: up == 0
           for: 5m
@@ -55,7 +55,7 @@ spec:
           annotations:
             summary: "Backup job failed or missing"
             description: "Backup job {{ $labels.job_name }} has not completed successfully in the last 24 hours."
-        
+
         - alert: EtcdBackupFailed
           expr: |
             (
@@ -80,7 +80,7 @@ spec:
           annotations:
             summary: "Node Exporter down"
             description: "Node Exporter on {{ $labels.instance }} is down for more than 5 minutes."
-        
+
         - alert: KubeStateMetricsDown
           expr: up{job="kube-state-metrics"} == 0
           for: 5m
@@ -90,7 +90,7 @@ spec:
           annotations:
             summary: "Kube State Metrics down"
             description: "Kube State Metrics on {{ $labels.instance }} is down for more than 5 minutes."
-        
+
         - alert: FluentBitDown
           expr: up{job="fluent-bit"} == 0
           for: 5m

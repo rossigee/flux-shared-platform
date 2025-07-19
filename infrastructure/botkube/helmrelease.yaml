@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: botkube
+  annotations:
+    kubernetes.io/description: "Kubernetes monitoring and communication bot for Slack, Mattermost, and Discord"
 spec:
   interval: 20m
   chart:

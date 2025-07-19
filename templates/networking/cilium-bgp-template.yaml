@@ -31,18 +31,18 @@ metadata:
 spec:
   # eBGP multihop configuration
   ebgpMultihop: 3
-  
+
   # BGP timers
   timers:
     connectRetryTimeSeconds: 30
     holdTimeSeconds: 30
     keepAliveTimeSeconds: 10
-  
+
   # Graceful restart for zero-downtime updates
   gracefulRestart:
     enabled: true
     restartTimeSeconds: 30
-  
+
   # Address families and advertisements
   families:
     - afi: ipv4
@@ -63,10 +63,10 @@ spec:
   advertisements:
     # Advertise pod CIDR for pod-to-pod communication
     - advertisementType: "PodCIDR"
-      
+
     # Advertise Cilium IP pools
     - advertisementType: "CiliumPodIPPool"
-      
+
     # Advertise service IPs
     - advertisementType: "Service"
       service:
@@ -84,7 +84,7 @@ metadata:
 spec:
   blocks:
   - cidr: "LB_SUBNET/MASK"  # Replace with LoadBalancer subnet (e.g., "10.189.1.0/24")
-  
+
   # Optional: Service selector to limit which services can use this pool
   # serviceSelector:
   #   matchLabels:
@@ -101,13 +101,13 @@ spec:
   defaults:
     # Primary network interface
     device: enp1s0  # Adjust if different
-    
+
     # Direct routing device (usually same as device)
     direct-routing-device: enp1s0
-    
+
     # Native routing CIDR for this node
     ipv4-native-routing-cidr: NODE_SUBNET/MASK  # Replace with node's subnet
-  
+
   nodeSelector:
     matchLabels:
       ORG_LABEL/vmhost: NODE_NAME  # Replace with org-specific label

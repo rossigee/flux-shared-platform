@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: external-dns
+  annotations:
+    kubernetes.io/description: "ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers"
 spec:
   interval: 20m
   chart:
@@ -18,7 +20,7 @@ spec:
     image:
       repository: registry.k8s.io/external-dns/external-dns
       tag: v0.14.2  # x-release-please-version
-    
+
     # Sources to watch for DNS records
     sources:
       - service
@@ -26,43 +28,43 @@ spec:
       # - istio-gateway  # Enable if using Istio
       # - istio-virtualservice
       # - crd  # For custom resources
-    
+
     # DNS provider configuration (to be patched per organization)
     provider: PROVIDER_NAME  # Replace: cloudflare, route53, azure, google, etc.
-    
+
     # Domain filters (to be patched per organization)
     domainFilters:
       - DOMAIN_NAME  # Replace with organization domains
-    
+
     # Annotation filter for selective DNS management
     annotationFilter: "external-dns.alpha.kubernetes.io/hostname"
-    
+
     # Registry for tracking DNS record ownership
     registry: txt
     txtPrefix: "_externaldns."
     txtOwnerId: CLUSTER_NAME  # Replace with cluster identifier
-    
+
     # Sync policy
     policy: sync  # or "upsert-only" to prevent deletions
-    
+
     # Intervals and timeouts
     interval: 5m
     minEventSyncInterval: 5s
-    
+
     # Event handling
     triggerLoopOnEvent: true
-    
+
     # Logging
     logLevel: info
     logFormat: json
-    
+
     # Metrics
     metrics:
       enabled: true
       serviceMonitor:
         enabled: true
         interval: 30s
-    
+
     # Resources
     resources:
       requests:
@@ -71,7 +73,7 @@ spec:
       limits:
         cpu: 200m
         memory: 256Mi
-    
+
     # Security context
     securityContext:
       allowPrivilegeEscalation: false
@@ -80,11 +82,11 @@ spec:
       runAsUser: 65534
       capabilities:
         drop: ["ALL"]
-    
+
     # Pod security context
     podSecurityContext:
       fsGroup: 65534
-    
+
     # Service account
     serviceAccount:
       create: true
@@ -92,7 +94,7 @@ spec:
       # For cloud providers, add workload identity annotations:
       # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/external-dns
       # iam.gke.io/gcp-service-account: external-dns@PROJECT.iam.gserviceaccount.com
-    
+
     # Extra arguments (provider-specific)
     extraArgs: []
     # For Cloudflare:
@@ -100,7 +102,7 @@ spec:
     # For AWS Route53:
     # - --aws-zone-type=public
     # - --aws-prefer-cname
-    
+
     # Environment variables (for provider credentials)
     env: []
     # For Cloudflare:
@@ -109,18 +111,18 @@ spec:
     #     secretKeyRef:
     #       name: cloudflare-api-token
     #       key: api-token
-    
+
     # Extra volumes (for provider configurations)
     extraVolumes: []
     extraVolumeMounts: []
-    
+
     # Node selector
     nodeSelector: {}
-    
+
     # Tolerations
     tolerations: []
-    
+
     # Affinity
     affinity: {}
-    
+
     # Provider-specific configuration should be added via cluster-specific patches

@@ -27,6 +27,8 @@ kind: ServiceMonitor
 metadata:
   name: haproxy-ingress
   namespace: haproxy-system
+  annotations:
+    kubernetes.io/description: "Prometheus ServiceMonitor for HAProxy ingress metrics collection"
   labels:
     app: prometheus
 spec:
@@ -46,6 +48,8 @@ kind: PrometheusRule
 metadata:
   name: haproxy-ingress-rules
   namespace: haproxy-system
+  annotations:
+    kubernetes.io/description: "Prometheus alerting rules for HAProxy ingress monitoring"
   labels:
     app: prometheus
 spec:
@@ -62,7 +66,7 @@ spec:
           annotations:
             summary: "HAProxy ingress is down"
             description: "HAProxy ingress instance {{ $labels.instance }} has been down for more than 5 minutes."
-        
+
         - alert: HaproxyIngressHighErrorRate
           expr: |
             (
@@ -77,7 +81,7 @@ spec:
           annotations:
             summary: "HAProxy high error rate"
             description: "HAProxy frontend {{ $labels.proxy }} has error rate of {{ printf \"%.2f\" (mul $value 100) }}% for more than 10 minutes."
-        
+
         - alert: HaproxyIngressHighLatency
           expr: haproxy_backend_response_time_average_seconds > 1.5
           for: 5m
@@ -87,7 +91,7 @@ spec:
           annotations:
             summary: "HAProxy high backend latency"
             description: "HAProxy backend {{ $labels.proxy }} has average response time of {{ humanizeDuration $value }} for more than 5 minutes."
-        
+
         - alert: HaproxyIngressBackendDown
           expr: haproxy_backend_up == 0
           for: 5m
@@ -97,7 +101,7 @@ spec:
           annotations:
             summary: "HAProxy backend down"
             description: "HAProxy backend {{ $labels.proxy }} has been down for more than 5 minutes."
-        
+
         - alert: HaproxyIngressSessionsHigh
           expr: |
             (
@@ -110,7 +114,7 @@ spec:
           annotations:
             summary: "HAProxy high session usage"
             description: "HAProxy frontend {{ $labels.proxy }} is using {{ printf \"%.2f\" (mul $value 100) }}% of available sessions."
-        
+
         - alert: HaproxyIngressConnectionErrors
           expr: rate(haproxy_backend_connection_errors_total[5m]) > 0.1
           for: 5m

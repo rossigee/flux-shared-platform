@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: harbor
+  annotations:
+    kubernetes.io/description: "Enterprise-class container registry with security scanning and policy management"
 spec:
   interval: 20m
   chart:

@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: argo-workflows
+  annotations:
+    kubernetes.io/description: "Argo Workflows is an open source container-native workflow engine for orchestrating parallel jobs on Kubernetes"
 spec:
   interval: 20m
   chart:

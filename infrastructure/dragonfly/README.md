@@ -37,8 +37,8 @@ For cluster-wide transparent proxying, manually configure each node:
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
     endpoint = ["http://localhost:30001"]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.golder.lan"]
-    endpoint = ["http://localhost:30001", "https://harbor.golder.lan"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.acme.lan"]
+    endpoint = ["http://localhost:30001", "https://harbor.acme.lan"]
 ```
 
 4. Restart containerd: `systemctl restart containerd`

@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: vaultwarden
+  annotations:
+    kubernetes.io/description: "Self-hosted password manager compatible with Bitwarden clients"
 spec:
   interval: 20m
   chart:

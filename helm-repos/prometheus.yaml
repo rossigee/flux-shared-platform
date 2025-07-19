@@ -3,6 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: prometheus
+  annotations:
+    kubernetes.io/description: "Prometheus community charts for monitoring and alerting stack components"
 spec:
   interval: 60m
   url: https://prometheus-community.github.io/helm-charts

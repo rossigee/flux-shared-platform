@@ -4,6 +4,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: haproxy-kubernetes-ingress
+  annotations:
+    kubernetes.io/description: "High-performance ingress controller with advanced load balancing capabilities"
 spec:
   interval: 20m
   chart:
@@ -20,23 +22,23 @@ spec:
       # Deployment settings
       kind: DaemonSet  # or Deployment
       replicaCount: 1  # Ignored for DaemonSet
-      
+
       # HAProxy configuration
       config:
         # Health checks
         check-interval: "20s"
-        
+
         # Backend server scaling
         scale-server-slots: "12"
-        
+
         # Headers and forwarding
         forwarded-for: "true"
-        
+
         # SSL/TLS
         ssl-redirect: "true"
         ssl-min-ver: "TLSv1.2"
         ssl-options: "no-sslv3 no-tlsv10 no-tlsv11 no-tls-tickets"
-        
+
         # Timeouts
         timeout-connect: "30s"
         timeout-client: "30s"
@@ -45,39 +47,39 @@ spec:
         timeout-http-keep-alive: "10s"
         timeout-queue: "30s"
         timeout-tunnel: "1h"
-        
+
         # Performance
         maxconn: "50000"
         nbthread: "4"
-        
+
         # Lua support (optional)
         external-has-lua: "true"
-        
+
         # Logging (optional)
         # syslog-server: "address:stdout,format:raw,facility:daemon"
-      
+
       # Extra arguments
       extraArgs:
         - --disable-ipv6  # Disable IPv6 if not needed
         # - --configmap-tcp-services=haproxy-system/tcp-services
         # - --configmap-errorfiles=haproxy-system/errorfiles
-      
+
       # Service configuration
       service:
         type: LoadBalancer
         loadBalancerIP: LB_IP  # Replace with organization IP
         externalTrafficPolicy: Local  # Preserve source IP
-        
+
         # Annotations for cloud/Cilium integration
         annotations:
           # For Cilium IPAM
           io.cilium/lb-ipam-ips: LB_IP  # Replace with organization IP
-          
+
         # Publish service for external-dns
         publishService:
           enabled: true
           pathOverride: "haproxy-system/haproxy-kubernetes-ingress"
-      
+
       # Resources
       resources:
         requests:
@@ -86,7 +88,7 @@ spec:
         limits:
           cpu: 2000m
           memory: 2Gi
-      
+
       # Probes
       livenessProbe:
         httpGet:
@@ -98,7 +100,7 @@ spec:
         timeoutSeconds: 1
         successThreshold: 1
         failureThreshold: 3
-      
+
       readinessProbe:
         httpGet:
           path: /healthz
@@ -109,7 +111,7 @@ spec:
         timeoutSeconds: 1
         successThreshold: 1
         failureThreshold: 3
-      
+
       # Affinity rules (optional)
       affinity:
         nodeAffinity:
@@ -129,7 +131,7 @@ spec:
                   operator: In
                   values: ["kubernetes-ingress"]
               topologyKey: kubernetes.io/hostname
-      
+
       # Security context
       securityContext:
         runAsNonRoot: true
@@ -140,18 +142,18 @@ spec:
           - ALL
           add:
           - NET_BIND_SERVICE
-      
+
       # Tolerations (optional)
       # tolerations:
       # - key: "node-role.kubernetes.io/ingress"
       #   operator: "Equal"
       #   value: "true"
       #   effect: "NoSchedule"
-      
+
       # Node selector (optional)
       # nodeSelector:
       #   node-role.kubernetes.io/ingress: "true"
-    
+
     # Default backend (optional)
     defaultBackend:
       enabled: false
@@ -166,21 +168,21 @@ spec:
         limits:
           cpu: 100m
           memory: 64Mi
-    
+
     # Service account
     serviceAccount:
       create: true
       annotations: {}
       name: ""
-    
+
     # RBAC
     rbac:
       create: true
-    
+
     # Pod security policy (deprecated in newer k8s)
     podSecurityPolicy:
       enabled: false
-    
+
     # Prometheus metrics
     metrics:
       enabled: true

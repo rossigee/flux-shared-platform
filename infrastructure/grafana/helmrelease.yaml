@@ -5,6 +5,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: grafana
+  annotations:
+    kubernetes.io/description: "Grafana is an open-source analytics and monitoring platform with beautiful dashboards for Prometheus metrics"
 spec:
   interval: 20m
   chart:
@@ -18,11 +20,11 @@ spec:
   values:
     # High availability configuration
     replicas: 2
-    
+
     # Image configuration with automation support
     image:
       tag: 12.0.2  # x-release-please-version
-    
+
     # Resource allocation
     resources:
       limits:
@@ -31,18 +33,18 @@ spec:
       requests:
         cpu: 250m
         memory: 256Mi
-    
+
     # Persistence configuration
     persistence:
       enabled: false  # Using external database
-    
+
     # Database configuration (PostgreSQL via CNPG)
     env:
       GF_DATABASE_TYPE: postgres
       GF_DATABASE_SSL_MODE: require
       GF_SESSION_PROVIDER: redis
       GF_SESSION_PROVIDER_CONFIG: addr=redis.grafana.svc.cluster.local:6379,pool_size=100,db=grafana
-    
+
     envValueFrom:
       GF_DATABASE_HOST:
         secretKeyRef:
@@ -60,7 +62,7 @@ spec:
         secretKeyRef:
           key: db-password
           name: grafana-db
-    
+
     # Core Grafana configuration
     grafana.ini:
       server:
@@ -69,26 +71,26 @@ spec:
         domain: ORG_DOMAIN  # Replace with organization domain
         root_url: https://grafana.ORG_DOMAIN/
         serve_from_sub_path: false
-      
+
       security:
         allow_embedding: true
         cookie_secure: true
         cookie_samesite: lax
         disable_gravatar: true
-      
+
       users:
         allow_sign_up: false
         auto_assign_org: true
         auto_assign_org_role: Viewer
-      
+
       # OIDC Authentication Template
       auth.generic_oauth:
         enabled: true
         name: ORG_SSO_NAME  # Replace with organization SSO name
         scopes: openid email profile offline_access
         role_attribute_path: |
-          contains(groups[*], 'Administrators') && 'GrafanaAdmin' || 
-          contains(groups[*], 'Users') && 'Editor' || 
+          contains(groups[*], 'Administrators') && 'GrafanaAdmin' ||
+          contains(groups[*], 'Users') && 'Editor' ||
           contains(groups[*], 'Visitors') && 'Viewer'
         auth_url: ORG_SSO_AUTH_URL  # Replace with SSO auth URL
         token_url: ORG_SSO_TOKEN_URL  # Replace with SSO token URL
@@ -96,18 +98,18 @@ spec:
         use_pkce: true
         use_refresh_token: true
         allow_assign_grafana_admin: true
-      
+
       log:
         mode: console
         level: info
-      
+
       analytics:
         reporting_enabled: false
         check_for_updates: false
-      
+
       panels:
         enable_alpha: true
-    
+
     # Standard plugin set
     plugins:
       - cloudflare-app
@@ -116,7 +118,7 @@ spec:
       - yesoreyeram-infinity-datasource
       - redis-datasource
       - hamedkarbasi93-nodegraphapi-datasource
-    
+
     # Data sources configuration
     datasources:
       datasources.yaml:
@@ -127,7 +129,7 @@ spec:
             url: http://prometheus.prometheus-operator.svc.cluster.local:9090
             access: proxy
             isDefault: true
-            
+
           - name: Loki
             type: loki
             url: http://loki.loki.svc.cluster.local:3100
@@ -139,14 +141,14 @@ spec:
                   matcherRegex: (?:trace_id)=(\w+)
                   name: TraceID
                   url: $${__value.raw}
-            
+
           - name: Redis
             type: redis-datasource
             url: redis://redis.grafana.svc.cluster.local:6379
             access: proxy
             jsonData:
               client: standalone
-    
+
     # Dashboard providers
     dashboardProviders:
       dashboardproviders.yaml:
@@ -192,19 +194,19 @@ spec:
             allowUiUpdates: true
             options:
               path: /var/lib/grafana/dashboards/databases
-    
+
     # Volume mounts for certificates and secrets
     extraVolumeMounts:
       - name: ORG_CA_CONFIGMAP  # Replace with organization CA configmap
         mountPath: /etc/ssl/certs/ca-certificates.crt
         subPath: ca.crt
         readOnly: true
-    
+
     extraVolumes:
       - name: ORG_CA_CONFIGMAP  # Replace with organization CA configmap
         configMap:
           name: ORG_CA_CONFIGMAP
-    
+
     # Secret mounts for OIDC and SMTP
     extraSecretMounts:
       - name: grafana-sso
@@ -217,20 +219,20 @@ spec:
         defaultMode: 0440
         mountPath: /etc/secrets/smtp
         readOnly: true
-    
+
     # Service configuration
     service:
       type: ClusterIP
       port: 80
       targetPort: 3000
-    
+
     # Security context
     securityContext:
       runAsNonRoot: true
       runAsUser: 472
       runAsGroup: 472
       fsGroup: 472
-    
+
     # Pod anti-affinity for HA
     affinity:
       podAntiAffinity:

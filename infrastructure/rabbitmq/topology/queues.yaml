@@ -17,7 +17,7 @@ metadata:
   name: email-processing-binding
 spec:
   vhost: "/"
-  source: scratchmail
+  source: email-exchange
   destination: email-processing
   destinationType: queue
   routingKey: ""

@@ -3,6 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: cilium
+  annotations:
+    kubernetes.io/description: "Cilium CNI and service mesh Helm charts for eBPF-based networking and security"
 spec:
   interval: 60m
   url: https://helm.cilium.io

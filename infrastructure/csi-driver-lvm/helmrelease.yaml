@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: csi-driver-lvm
+  annotations:
+    kubernetes.io/description: "CSI Driver for managing LVM volumes as Kubernetes persistent volumes with dynamic provisioning"
 spec:
   interval: 20m
   chart:

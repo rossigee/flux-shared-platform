@@ -5,6 +5,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cilium
+  annotations:
+    kubernetes.io/description: "eBPF-based CNI providing advanced networking, security, and observability"
 spec:
   interval: 20m
   chart:
@@ -20,30 +22,30 @@ spec:
     cluster:
       name: CLUSTER_NAME  # Replace with cluster name
       id: CLUSTER_ID     # Replace with unique cluster ID (0-255)
-    
+
     # IP Address Management
     ipam:
       mode: kubernetes
       operator:
         clusterPoolIPv4PodCIDRList:
           - "10.244.0.0/16"  # Adjust to match cluster pod CIDR
-    
+
     # Kubernetes configuration
     k8s:
       requireIPv4PodCIDR: true
       requireIPv6PodCIDR: false
-    
+
     # Enable BGP Control Plane
     bgpControlPlane:
       enabled: true
-    
+
     # LoadBalancer configuration
     loadBalancer:
       algorithm: round_robin
       mode: dsr  # Direct Server Return for performance
       acceleration: native
       serviceTopology: true
-    
+
     # Hubble observability
     hubble:
       enabled: true
@@ -79,7 +81,7 @@ spec:
           - http
         serviceMonitor:
           enabled: true
-    
+
     # Operator configuration
     operator:
       replicas: 2  # HA configuration
@@ -95,7 +97,7 @@ spec:
         enabled: true
         serviceMonitor:
           enabled: true
-    
+
     # Agent configuration
     resources:
       limits:
@@ -104,17 +106,17 @@ spec:
       requests:
         cpu: 100m
         memory: 256Mi
-    
+
     # Prometheus metrics
     prometheus:
       enabled: true
       serviceMonitor:
         enabled: true
         trustCRDsExist: true
-    
+
     # Security policies
     policyEnforcementMode: default
-    
+
     # Host networking
     hostPort:
       enabled: true
@@ -122,7 +124,7 @@ spec:
       enabled: true
     externalIPs:
       enabled: true
-    
+
     # BPF configuration
     bpf:
       masquerade: true
@@ -133,35 +135,35 @@ spec:
       monitorAggregation: medium
       monitorInterval: "5s"
       monitorFlags: "all"
-    
+
     # Tunnel configuration (disabled for native routing)
     tunnel: disabled
     autoDirectNodeRoutes: true
     nativeRoutingCIDR: CLUSTER_POD_CIDR  # Replace with cluster pod CIDR
-    
+
     # Enable bandwidth manager for QoS
     bandwidthManager:
       enabled: true
       bbr: true
-    
+
     # MTU configuration
     mtu: 0  # Auto-detect
-    
+
     # Logging
     debug:
       enabled: false
       verbose: ""
-    
+
     # Cluster mesh (for multi-cluster)
     clustermesh:
       useAPIServer: false  # Enable if using cluster mesh
-    
+
     # Encryption (optional)
     encryption:
       enabled: false
       type: wireguard  # or ipsec
       # nodeEncryption: true
-    
+
     # Service account
     serviceAccounts:
       cilium:
@@ -173,14 +175,14 @@ spec:
       hubble:
         create: true
         annotations: {}
-    
+
     # Update strategy
     updateStrategy:
       type: RollingUpdate
       rollingUpdate:
         maxSurge: 1
         maxUnavailable: 1
-    
+
     # Affinity rules
     affinity:
       podAntiAffinity:

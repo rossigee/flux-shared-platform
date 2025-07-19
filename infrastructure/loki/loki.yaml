@@ -3,6 +3,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: loki
+  annotations:
+    kubernetes.io/description: "Loki is a horizontally-scalable, highly-available log aggregation system inspired by Prometheus"
 spec:
   serviceName: loki
   replicas: 1

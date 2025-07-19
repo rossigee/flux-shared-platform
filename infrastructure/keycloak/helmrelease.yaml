@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: keycloak
+  annotations:
+    kubernetes.io/description: "Open source identity and access management solution with SSO support"
 spec:
   interval: 20m
   chart:

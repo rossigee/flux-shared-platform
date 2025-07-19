@@ -1,0 +1,103 @@
+# AWS Staging Environment Kustomization
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the shared platform components
+resources:
+  - ../../../infrastructure/prometheus-operator
+  - ../../../infrastructure/grafana
+  - ../../../infrastructure/loki
+  - ../../../infrastructure/external-dns
+  - ../../../infrastructure/cert-manager
+  - ../../../infrastructure/external-secrets
+
+# AWS-specific patches
+patches:
+  # External DNS - Route53 configuration
+  - target:
+      kind: HelmRelease
+      name: external-dns
+    patch: |-
+      - op: replace
+        path: /spec/values/provider
+        value: aws
+      - op: replace
+        path: /spec/values/domainFilters
+        value:
+          - staging.example.com
+      - op: add
+        path: /spec/values/txtOwnerId
+        value: staging-eks-cluster
+      - op: add
+        path: /spec/values/serviceAccount/annotations
+        value:
+          eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/external-dns-staging
+      - op: add
+        path: /spec/values/extraArgs
+        value:
+          - --aws-zone-type=public
+          - --aws-prefer-cname
+
+  # External Secrets - AWS Secrets Manager
+  - target:
+      kind: HelmRelease
+      name: external-secrets
+    patch: |-
+      - op: add
+        path: /spec/values/serviceAccount/annotations
+        value:
+          eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/external-secrets-staging
+
+  # Grafana - S3 image storage
+  - target:
+      kind: HelmRelease
+      name: grafana
+    patch: |-
+      - op: replace
+        path: /spec/values/grafana.ini/server/domain
+        value: grafana-staging.example.com
+      - op: add
+        path: /spec/values/grafana.ini/external_image_storage
+        value:
+          provider: s3
+          s3:
+            bucket: grafana-images-staging
+            region: us-east-1
+            path_style_access: false
+
+  # Prometheus - EBS storage
+  - target:
+      kind: HelmRelease
+      name: kube-prometheus-stack
+    patch: |-
+      - op: add
+        path: /spec/values/prometheus/prometheusSpec/storageSpec
+        value:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: gp3
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 50Gi
+
+  # Cert-manager - Route53 DNS solver
+  - target:
+      kind: HelmRelease
+      name: cert-manager
+    patch: |-
+      - op: add
+        path: /spec/values/serviceAccount/annotations
+        value:
+          eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/cert-manager-staging
+
+# ConfigMap for cluster-specific values
+configMapGenerator:
+  - name: aws-staging-config
+    namespace: flux-system
+    literals:
+      - cluster_name=staging-eks-cluster
+      - region=us-east-1
+      - environment=staging
+      - backup_bucket=s3://backups-staging-123456789012

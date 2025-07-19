@@ -3,6 +3,8 @@ apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
   name: rabbitmq
+  annotations:
+    kubernetes.io/description: "RabbitMQ message broker cluster with MQTT and management interfaces"
 spec:
   replicas: 1
 

@@ -24,8 +24,8 @@ spec:
               - key: kubernetes.io/hostname
                 operator: In
                 values:
-                - "golder-secops-workernode-5"
-                - "golder-secops-workernode-1"
+                - "acme-operations-workernode-5"
+                - "acme-operations-workernode-1"
       containers:
       - name: mysql
         image: mirror.gcr.io/library/mysql:8.0

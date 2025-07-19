@@ -3,6 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: haproxytech
+  annotations:
+    kubernetes.io/description: "HAProxy charts for load balancing and high availability"
 spec:
   interval: 60m
   url: https://haproxytech.github.io/helm-charts

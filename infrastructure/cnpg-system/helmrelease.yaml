@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cloudnative-pg
+  annotations:
+    kubernetes.io/description: "CloudNative-PG is a Kubernetes operator for PostgreSQL with native high availability and automated failover"
 spec:
   interval: 20m
   chart:

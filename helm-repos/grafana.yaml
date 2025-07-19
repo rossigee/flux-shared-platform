@@ -3,6 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
   name: grafana
+  annotations:
+    kubernetes.io/description: "Grafana charts for observability visualization and dashboards"
 spec:
   interval: 60m
   url: oci://ghcr.io/grafana/helm-charts

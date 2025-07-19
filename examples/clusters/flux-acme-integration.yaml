@@ -1,4 +1,4 @@
-# Example integration for flux-timewarp repository
+# Example integration for flux-acme repository
 # This shows how to add flux-shared-platform as a source and use shared components
 
 ---
@@ -12,7 +12,7 @@ spec:
   interval: 10m
   ref:
     branch: main
-  url: https://github.com/timewarp/flux-shared-platform
+  url: https://github.com/rossigee/flux-shared-platform
 
 ---
 # Use shared cert-manager component
@@ -74,7 +74,7 @@ spec:
     - patch: |
         - op: replace
           path: /spec/values/controller/workflowNamespaces
-          value: ["kube-system", "timewarp"]
+          value: ["kube-system", "acme"]
       target:
         kind: HelmRelease
         name: argo-workflows

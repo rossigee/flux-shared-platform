@@ -3,6 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: argoproj
+  annotations:
+    kubernetes.io/description: "Argo project Helm charts including Argo CD, Argo Workflows, and Argo Events"
 spec:
   interval: 60m
   url: https://argoproj.github.io/argo-helm

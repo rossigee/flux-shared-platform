@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kubescape-operator
+  annotations:
+    kubernetes.io/description: "Kubescape provides comprehensive Kubernetes security posture management with vulnerability scanning and compliance checks"
 spec:
   interval: 20m
   chart:

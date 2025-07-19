@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: crossplane
+  annotations:
+    kubernetes.io/description: "Cloud-native control plane framework for building custom platforms"
 spec:
   interval: 20m
   timeout: 10m

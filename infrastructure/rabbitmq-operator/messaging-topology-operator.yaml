@@ -4,6 +4,8 @@ kind: GitRepository
 metadata:
   name: rabbitmq-messaging-topology-operator
   namespace: rabbitmq-system
+  annotations:
+    kubernetes.io/description: "GitRepository source for RabbitMQ Messaging Topology Operator manifests"
 spec:
   interval: 10m
   url: https://github.com/rabbitmq/messaging-topology-operator
@@ -15,6 +17,8 @@ kind: Kustomization
 metadata:
   name: rabbitmq-messaging-topology-operator
   namespace: rabbitmq-system
+  annotations:
+    kubernetes.io/description: "Flux Kustomization for RabbitMQ Messaging Topology Operator CRDs"
 spec:
   interval: 10m
   sourceRef:

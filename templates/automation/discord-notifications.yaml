@@ -5,6 +5,8 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Provider
 metadata:
   name: flux-discord
+  annotations:
+    kubernetes.io/description: "Flux notification provider for Discord webhook integration"
 spec:
   type: discord
   secretRef:
@@ -15,6 +17,8 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
 metadata:
   name: all-events
+  annotations:
+    kubernetes.io/description: "Flux alert configuration for Discord notifications on all events"
 spec:
   providerRef:
     name: flux-discord

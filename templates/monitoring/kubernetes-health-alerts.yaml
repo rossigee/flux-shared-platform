@@ -25,7 +25,7 @@ spec:
           annotations:
             summary: "Node disk space is filling up"
             description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left and is filling up."
-        
+
         - alert: NodeDiskSpaceCritical
           expr: |
             (
@@ -38,7 +38,7 @@ spec:
           annotations:
             summary: "Node disk space critically low"
             description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left."
-        
+
         - alert: NodeMemoryPressure
           expr: |
             (
@@ -57,7 +57,7 @@ spec:
           annotations:
             summary: "Node under memory pressure"
             description: "Node {{ $labels.instance }} is under memory pressure with {{ printf \"%.2f\" $value }}% memory available."
-        
+
         - alert: NodeCPUHighUsage
           expr: |
             (
@@ -85,7 +85,7 @@ spec:
           annotations:
             summary: "Pod is crash looping"
             description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is crash looping."
-        
+
         - alert: PodNotReady
           expr: |
             sum by (namespace, pod) (
@@ -102,7 +102,7 @@ spec:
           annotations:
             summary: "Pod not ready"
             description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for more than 15 minutes."
-        
+
         - alert: PodEvicted
           expr: |
             increase(kube_pod_status_phase{phase="Failed"}[1h]) > 0
@@ -131,7 +131,7 @@ spec:
           annotations:
             summary: "PersistentVolume filling up"
             description: "PersistentVolume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is filling up ({{ printf \"%.2f\" $value }}% available)."
-        
+
         - alert: PersistentVolumeCritical
           expr: |
             (
@@ -144,7 +144,7 @@ spec:
           annotations:
             summary: "PersistentVolume critically low on space"
             description: "PersistentVolume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has only {{ printf \"%.2f\" $value }}% space remaining."
-        
+
         - alert: OrphanedPersistentVolumeClaim
           expr: |
             (

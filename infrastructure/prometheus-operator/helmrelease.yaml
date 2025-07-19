@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
+  annotations:
+    kubernetes.io/description: "Prometheus Operator provides Kubernetes-native deployment and management of Prometheus and related monitoring components"
 spec:
   interval: 20m
   chart:
@@ -26,7 +28,7 @@ spec:
       enabled: false
     prometheus:
       enabled: false
-    
+
     # Prometheus Operator configuration
     prometheusOperator:
       enabled: true

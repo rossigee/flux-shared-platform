@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: external-secrets
+  annotations:
+    kubernetes.io/description: "External Secrets Operator reads secrets from external systems and creates Kubernetes secrets"
 spec:
   interval: 20m
   chart:

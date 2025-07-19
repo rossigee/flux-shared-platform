@@ -3,6 +3,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cert-manager
+  annotations:
+    kubernetes.io/description: "cert-manager automates the management and issuance of TLS certificates from various certificate authorities"
 spec:
   interval: 20m
   chart:

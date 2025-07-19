@@ -4,6 +4,8 @@ kind: Kustomization
 metadata:
   name: rabbitmq-cluster-operator
   namespace: rabbitmq-system
+  annotations:
+    kubernetes.io/description: "Flux Kustomization for RabbitMQ Cluster Operator CRDs"
 spec:
   interval: 10m
   sourceRef:
@@ -18,6 +20,8 @@ kind: GitRepository
 metadata:
   name: rabbitmq-cluster-operator
   namespace: rabbitmq-system
+  annotations:
+    kubernetes.io/description: "GitRepository source for RabbitMQ Cluster Operator manifests"
 spec:
   interval: 10m
   url: https://github.com/rabbitmq/cluster-operator

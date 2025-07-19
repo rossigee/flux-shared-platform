@@ -20,7 +20,7 @@ spec:
           annotations:
             summary: "PostgreSQL is down"
             description: "PostgreSQL instance {{ $labels.instance }} is down for more than 5 minutes."
-        
+
         - alert: PostgreSQLHighConnections
           expr: |
             (
@@ -33,7 +33,7 @@ spec:
           annotations:
             summary: "PostgreSQL high connection usage"
             description: "PostgreSQL instance {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of available connections."
-        
+
         - alert: PostgreSQLSlowQueries
           expr: |
             (
@@ -46,7 +46,7 @@ spec:
           annotations:
             summary: "PostgreSQL slow queries detected"
             description: "PostgreSQL instance {{ $labels.instance }} has queries running longer than 5 minutes."
-        
+
         - alert: PostgreSQLReplicationLag
           expr: |
             (
@@ -71,7 +71,7 @@ spec:
           annotations:
             summary: "CNPG cluster degraded"
             description: "CNPG cluster {{ $labels.cluster }} in namespace {{ $labels.namespace }} is in a degraded state."
-        
+
         - alert: CNPGInstanceDown
           expr: cnpg_collector_pg_cluster_instances_ready < cnpg_collector_pg_cluster_instances
           for: 10m
@@ -81,7 +81,7 @@ spec:
           annotations:
             summary: "CNPG instance down"
             description: "CNPG cluster {{ $labels.cluster }} in namespace {{ $labels.namespace }} has {{ $value }} instances down."
-        
+
         - alert: CNPGSwitchoverEvent
           expr: increase(cnpg_collector_pg_cluster_switchover_required[5m]) > 0
           for: 0m
@@ -91,7 +91,7 @@ spec:
           annotations:
             summary: "CNPG switchover required"
             description: "CNPG cluster {{ $labels.cluster }} in namespace {{ $labels.namespace }} requires a switchover."
-        
+
         - alert: CNPGBackupFailed
           expr: |
             (
@@ -116,7 +116,7 @@ spec:
           annotations:
             summary: "Redis is down"
             description: "Redis instance {{ $labels.instance }} is down for more than 5 minutes."
-        
+
         - alert: RedisHighMemoryUsage
           expr: |
             (
@@ -129,7 +129,7 @@ spec:
           annotations:
             summary: "Redis high memory usage"
             description: "Redis instance {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of available memory."
-        
+
         - alert: RedisConnectionsHigh
           expr: |
             (
@@ -142,7 +142,7 @@ spec:
           annotations:
             summary: "Redis high connection usage"
             description: "Redis instance {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of available connections."
-        
+
         - alert: RedisSlowLog
           expr: increase(redis_slowlog_length[5m]) > 0
           for: 5m
@@ -164,7 +164,7 @@ spec:
           annotations:
             summary: "MariaDB is down"
             description: "MariaDB instance {{ $labels.instance }} is down for more than 5 minutes."
-        
+
         - alert: MariaDBHighConnections
           expr: |
             (
@@ -177,7 +177,7 @@ spec:
           annotations:
             summary: "MariaDB high connection usage"
             description: "MariaDB instance {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of available connections."
-        
+
         - alert: MariaDBSlowQueries
           expr: increase(mysql_global_status_slow_queries[5m]) > 0
           for: 10m
@@ -187,7 +187,7 @@ spec:
           annotations:
             summary: "MariaDB slow queries detected"
             description: "MariaDB instance {{ $labels.instance }} has {{ $value }} slow queries in the last 5 minutes."
-        
+
         - alert: MariaDBReplicationLag
           expr: |
             (

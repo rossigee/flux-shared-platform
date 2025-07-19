@@ -4,6 +4,8 @@ kind: ImageUpdateAutomation
 metadata:
   name: crossplane-providers
   namespace: flux-system
+  annotations:
+    kubernetes.io/description: "Automated image updates for Crossplane provider configurations"
 spec:
   sourceRef:
     kind: GitRepository
@@ -14,7 +16,7 @@ spec:
         branch: master
     commit:
       author:
-        email: flux@golder.lan
+        email: flux@acme.lan
         name: Flux
       messageTemplate: |
         Automated image update

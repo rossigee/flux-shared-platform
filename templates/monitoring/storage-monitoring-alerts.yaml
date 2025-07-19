@@ -23,7 +23,7 @@ spec:
           annotations:
             summary: "Storage volume group capacity low"
             description: "Volume group {{ $labels.vg_name }} on {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% free space remaining."
-        
+
         - alert: StorageVolumeGroupCritical
           expr: |
             (
@@ -36,7 +36,7 @@ spec:
           annotations:
             summary: "Storage volume group critically low"
             description: "Volume group {{ $labels.vg_name }} on {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% free space remaining."
-        
+
         - alert: NamespaceStorageQuotaExceeded
           expr: |
             (
@@ -66,7 +66,7 @@ spec:
           annotations:
             summary: "Storage expected to fill in 7 days"
             description: "Filesystem {{ $labels.device }} on {{ $labels.instance }} is predicted to fill up within 7 days based on current growth rate."
-        
+
         - alert: PVCGrowthPrediction
           expr: |
             (
@@ -91,7 +91,7 @@ spec:
           annotations:
             summary: "MinIO is down"
             description: "MinIO instance {{ $labels.instance }} is down for more than 5 minutes."
-        
+
         - alert: MinIODiskOffline
           expr: minio_cluster_disk_offline_total > 0
           for: 5m
@@ -101,7 +101,7 @@ spec:
           annotations:
             summary: "MinIO disk offline"
             description: "MinIO has {{ $value }} disk(s) offline."
-        
+
         - alert: MinIOHighErrorRate
           expr: |
             (
@@ -116,7 +116,7 @@ spec:
           annotations:
             summary: "MinIO high error rate"
             description: "MinIO has high error rate: {{ printf \"%.2f\" (mul $value 100) }}% for more than 10 minutes."
-        
+
         - alert: MinIOBucketSizeGrowth
           expr: |
             (
@@ -144,7 +144,7 @@ spec:
           annotations:
             summary: "Backup storage space low"
             description: "Backup filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% space remaining."
-        
+
         - alert: BackupRetentionViolation
           expr: |
             (
