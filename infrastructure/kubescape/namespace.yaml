@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubescape
+  labels:
+    toolkit.fluxcd.io/tenant: shared-platform

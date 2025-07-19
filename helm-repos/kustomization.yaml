@@ -7,3 +7,5 @@ resources:
   - external-secrets.yaml
   - argoproj.yaml
   - prometheus.yaml
+  - kubescape.yaml
+  - kyverno.yaml
