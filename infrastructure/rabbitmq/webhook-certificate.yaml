@@ -1,0 +1,16 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: messaging-topology-operator-webhook-cert
+  namespace: rabbitmq-system
+spec:
+  secretName: webhook-server-certs
+  commonName: messaging-topology-operator-webhook-service.rabbitmq-system.svc
+  issuerRef:
+    name: vault
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - messaging-topology-operator-webhook-service.rabbitmq-system.svc
+    - messaging-topology-operator-webhook-service.rabbitmq-system.svc.cluster.local

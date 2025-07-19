@@ -1,0 +1,22 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: keycloak
+spec:
+  image: quay.io/keycloak/keycloak
+  interval: 2h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: keycloak
+spec:
+  imageRepositoryRef:
+    name: keycloak
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+\'
+  policy:
+    alphabetical:
+      order: asc

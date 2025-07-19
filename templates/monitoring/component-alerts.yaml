@@ -20,7 +20,7 @@ spec:
           annotations:
             summary: "COMPONENT_NAME is down"
             description: "COMPONENT_NAME in namespace NAMESPACE_NAME has been down for more than 5 minutes."
-        
+
         - alert: COMPONENT_NAMEHighCPU
           expr: rate(container_cpu_usage_seconds_total{pod=~"COMPONENT_NAME-.*", namespace="NAMESPACE_NAME"}[5m]) > 0.8
           for: 10m
@@ -30,7 +30,7 @@ spec:
           annotations:
             summary: "High CPU usage for COMPONENT_NAME"
             description: "COMPONENT_NAME in namespace NAMESPACE_NAME is using {{ $value | humanizePercentage }} CPU."
-        
+
         - alert: COMPONENT_NAMEHighMemory
           expr: container_memory_usage_bytes{pod=~"COMPONENT_NAME-.*", namespace="NAMESPACE_NAME"} / container_spec_memory_limit_bytes > 0.9
           for: 10m

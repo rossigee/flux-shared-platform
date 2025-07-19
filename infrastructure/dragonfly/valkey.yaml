@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dragonfly-valkey
+  namespace: dragonfly-system
+spec:
+  serviceName: dragonfly-valkey
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dragonfly-valkey
+  template:
+    metadata:
+      labels:
+        app: dragonfly-valkey
+    spec:
+      containers:
+      - name: valkey
+        image: mirror.gcr.io/valkey/valkey:7.2.7-alpine
+        ports:
+        - containerPort: 6379
+          name: valkey
+        envFrom:
+        - secretRef:
+            name: dragonfly-valkey-credentials
+            # VALKEY_PASSWORD from External Secrets
+        command:
+        - valkey-server
+        - --requirepass
+        - $(VALKEY_PASSWORD)
+        - --appendonly
+        - "yes"
+        - --save
+        - "900 1"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: valkey-data
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: valkey-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: csi-driver-lvm-linear
+      resources:
+        requests:
+          storage: 2Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-valkey
+  namespace: dragonfly-system
+spec:
+  selector:
+    app: dragonfly-valkey
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: valkey
+  type: ClusterIP

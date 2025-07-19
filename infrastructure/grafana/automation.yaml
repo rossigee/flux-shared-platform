@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: grafana
+spec:
+  image: grafana/grafana
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: grafana
+spec:
+  imageRepositoryRef:
+    name: grafana
+  policy:
+    semver:
+      range: '12.x.x'

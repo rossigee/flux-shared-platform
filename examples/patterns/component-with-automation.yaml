@@ -32,7 +32,7 @@ patches:
       - op: replace
         path: /metadata/name
         value: my-component
-      - op: replace  
+      - op: replace
         path: /spec/image
         value: nginx
       - op: replace
@@ -41,7 +41,7 @@ patches:
     target:
       kind: ImageRepository
       name: COMPONENT_NAME
-  
+
   - patch: |
       - op: replace
         path: /metadata/name

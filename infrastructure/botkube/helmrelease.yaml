@@ -1,0 +1,19 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: botkube
+spec:
+  interval: 20m
+  chart:
+    spec:
+      chart: botkube
+      version: v1.12.0
+      sourceRef:
+        kind: HelmRepository
+        name: botkube
+        namespace: flux-system
+  values:
+    analytics:
+      disable: true
+    # Additional configuration should be provided by cluster-specific patches

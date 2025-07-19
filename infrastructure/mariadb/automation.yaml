@@ -1,0 +1,41 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: mariadb
+spec:
+  image: mariadb
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: mariadb
+spec:
+  imageRepositoryRef:
+    name: mariadb
+  policy:
+    semver:
+      range: '>=10.0.0'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: mysqld-exporter
+spec:
+  image: prom/mysqld-exporter
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: mysqld-exporter
+spec:
+  imageRepositoryRef:
+    name: mysqld-exporter
+  policy:
+    semver:
+      range: '>=0.10.0'

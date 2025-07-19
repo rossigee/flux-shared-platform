@@ -33,7 +33,7 @@ spec:
   wait: true
 
 ---
-# Use shared external-secrets component  
+# Use shared external-secrets component
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:

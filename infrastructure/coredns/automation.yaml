@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: coredns
+spec:
+  image: registry.k8s.io/coredns/coredns
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: coredns
+spec:
+  imageRepositoryRef:
+    name: coredns
+  policy:
+    semver:
+      range: '>=1.0'

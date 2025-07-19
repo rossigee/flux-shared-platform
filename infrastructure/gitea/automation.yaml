@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: gitea
+spec:
+  image: gitea/gitea
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: gitea
+spec:
+  imageRepositoryRef:
+    name: gitea
+  policy:
+    semver:
+      range: '>=1.22.0'

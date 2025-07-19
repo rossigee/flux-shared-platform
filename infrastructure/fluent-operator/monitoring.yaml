@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentbit-headless
+spec:
+  clusterIP: None
+  clusterIPs:
+  - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: metrics
+    port: 2020
+    protocol: TCP
+    targetPort: metrics
+  - name: node-metrics
+    port: 2021
+    protocol: TCP
+    targetPort: node-metrics
+  selector:
+    app.kubernetes.io/name: fluent-bit
+  sessionAffinity: None
+  type: ClusterIP

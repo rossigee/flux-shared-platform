@@ -1,0 +1,157 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dragonfly
+  namespace: dragonfly-system
+spec:
+  interval: 10m
+  timeout: 10m
+  chart:
+    spec:
+      chart: dragonfly
+      version: "1.4.1"
+      sourceRef:
+        kind: HelmRepository
+        name: dragonfly
+        namespace: flux-system
+  values:
+    # Disable MySQL and Redis - use external Valkey instead
+    mysql:
+      enable: false
+
+    redis:
+      enable: false
+
+    # Use dedicated Dragonfly Valkey instance
+    externalRedis:
+      host: "dragonfly-valkey.dragonfly-system.svc.cluster.local"
+      port: 6379
+      # password: configured via cluster-specific External Secrets
+
+    # Use dedicated Dragonfly MySQL database
+    externalMysql:
+      migrate: true
+      host: "dragonfly-mysql.dragonfly-system.svc.cluster.local"
+      port: 3306
+      username: "dragonfly"
+      # password: configured via cluster-specific External Secrets
+      database: "dragonfly"
+
+    # Manager configuration
+    manager:
+      replicas: 1
+      image:
+        registry: harbor.golder.lan
+        repository: dockerhub/dragonflyoss/manager
+      grpc:
+        enable: true
+      metrics:
+        enable: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+    # Scheduler configuration
+    scheduler:
+      replicas: 1
+      image:
+        registry: harbor.golder.lan
+        repository: dockerhub/dragonflyoss/scheduler
+      metrics:
+        enable: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+    # Seed peer configuration (acts as a cache and initial seeder)
+    seedPeer:
+      enable: true
+      replicas: 1
+      image:
+        registry: harbor.golder.lan
+        repository: dockerhub/dragonflyoss/dfdaemon
+      persistence:
+        enabled: true
+        size: 50Gi
+        storageClass: csi-driver-lvm-linear
+      metrics:
+        enable: true
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+
+    # Client configuration (runs on every node)
+    client:
+      enable: true
+      image:
+        registry: harbor.golder.lan
+        repository: dockerhub/dragonflyoss/dfdaemon
+      hostNetwork: false  # Changed: Use pod network instead
+      dnsPolicy: ClusterFirst
+      config:
+        verbose: false
+        download:
+          concurrent:
+            # Total concurrent download tasks
+            count: 10
+          # Download rate limit per task
+          rateLimit: 100Mi
+        upload:
+          # Upload rate limit
+          rateLimit: 100Mi
+        storage:
+          # Maximum disk space for P2P cache
+          diskGCThreshold: 50Gi
+          multiplex: true
+        proxy:
+          # Proxy configuration for container registries
+          registryMirror:
+            # Harbor proxy
+            - host: harbor.golder.lan
+              insecure: false
+              direct: false
+            # Docker Hub proxy through P2P
+            - host: docker.io
+              insecure: false
+              direct: false
+            - host: registry-1.docker.io
+              insecure: false
+              direct: false
+            # Other registries can be added here
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      persistence:
+        enabled: true
+        size: 10Gi
+        storageClass: csi-driver-lvm-linear
+      metrics:
+        enable: true
+
+    # Telemetry
+    exporter:
+      enable: true
+
+    # Prometheus metrics
+    metrics:
+      enable: true
+      service:
+        type: ClusterIP
+      serviceMonitor:
+        enable: false  # Enable if you have Prometheus Operator

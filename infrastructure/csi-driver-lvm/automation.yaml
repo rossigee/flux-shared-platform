@@ -1,0 +1,41 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: csi-driver-lvm
+spec:
+  image: ghcr.io/metal-stack/csi-driver-lvm
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: csi-driver-lvm
+spec:
+  imageRepositoryRef:
+    name: csi-driver-lvm
+  policy:
+    semver:
+      range: '>=0.5.0'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: csi-driver-lvm-provisioner
+spec:
+  image: ghcr.io/metal-stack/csi-driver-lvm-provisioner
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: csi-driver-lvm-provisioner
+spec:
+  imageRepositoryRef:
+    name: csi-driver-lvm-provisioner
+  policy:
+    semver:
+      range: '>=0.5.0'

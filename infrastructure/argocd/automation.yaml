@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: argocd
+spec:
+  image: quay.io/argoproj/argocd
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: argocd
+spec:
+  imageRepositoryRef:
+    name: argocd
+  policy:
+    semver:
+      range: '>=v2.10.0'

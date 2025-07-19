@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: argo-events
+spec:
+  image: quay.io/argoproj/argo-events
+  interval: 2h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: argo-events
+spec:
+  imageRepositoryRef:
+    name: argo-events
+  policy:
+    semver:
+      range: '>=1.9.0'

@@ -1,0 +1,37 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ['--allow-multiple-documents']
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ['-d', 'relaxed']
+
+  - repo: local
+    hooks:
+      - id: kustomize-validate
+        name: Validate Kustomization files
+        entry: bash
+        args: ['-c', 'for dir in $(find . -name "kustomization.yaml" -exec dirname {} \;); do echo "Validating $dir"; kubectl kustomize "$dir" > /dev/null || exit 1; done']
+        language: system
+        files: '^.*kustomization\.ya?ml$'
+        pass_filenames: false
+
+      - id: helm-template-validate
+        name: Validate HelmRelease manifests
+        entry: bash
+        args: ['-c', 'find . -name "helmrelease.yaml" -exec dirname {} \; | while read dir; do echo "Checking HelmRelease in $dir"; if ! kubectl apply --dry-run=client -f "$dir/helmrelease.yaml" > /dev/null 2>&1; then echo "Invalid HelmRelease in $dir"; exit 1; fi; done']
+        language: system
+        files: '^.*helmrelease\.ya?ml$'
+        pass_filenames: false
