@@ -1,0 +1,102 @@
+# Core Infrastructure Alert Rules Template
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: core-infrastructure-alerts
+  labels:
+    app: prometheus
+    team: platform
+spec:
+  groups:
+    - name: prometheus.rules
+      rules:
+        - alert: PrometheusConfigurationReloadFailure
+          expr: prometheus_config_last_reload_successful == 0
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Prometheus configuration reload failed"
+            description: "Prometheus {{ $labels.instance }} configuration reload has failed for more than 10 minutes."
+        
+        - alert: PrometheusRuleEvaluationFailures
+          expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Prometheus rule evaluation failures"
+            description: "Prometheus {{ $labels.instance }} has failed to evaluate {{ $value }} rules in the last 5 minutes."
+        
+        - alert: PrometheusTargetDown
+          expr: up == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Prometheus target down"
+            description: "{{ $labels.job }} target {{ $labels.instance }} is down for more than 5 minutes."
+
+    - name: backup.rules
+      rules:
+        - alert: BackupJobFailed
+          expr: |
+            (
+              time() - on(job) kube_job_status_completion_time{condition="Complete", job_name=~".*backup.*"}
+            ) > 86400
+          for: 1h
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Backup job failed or missing"
+            description: "Backup job {{ $labels.job_name }} has not completed successfully in the last 24 hours."
+        
+        - alert: EtcdBackupFailed
+          expr: |
+            (
+              time() - on(job) kube_job_status_completion_time{condition="Complete", job_name=~".*etcd.*backup.*"}
+            ) > 43200
+          for: 30m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Etcd backup failed"
+            description: "Etcd backup job {{ $labels.job_name }} has not completed successfully in the last 12 hours."
+
+    - name: infrastructure-health.rules
+      rules:
+        - alert: NodeExporterDown
+          expr: up{job="node-exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Node Exporter down"
+            description: "Node Exporter on {{ $labels.instance }} is down for more than 5 minutes."
+        
+        - alert: KubeStateMetricsDown
+          expr: up{job="kube-state-metrics"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Kube State Metrics down"
+            description: "Kube State Metrics on {{ $labels.instance }} is down for more than 5 minutes."
+        
+        - alert: FluentBitDown
+          expr: up{job="fluent-bit"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "FluentBit down"
+            description: "FluentBit on {{ $labels.instance }} is down for more than 5 minutes."

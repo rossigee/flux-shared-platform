@@ -1,0 +1,316 @@
+# Redis/Valkey Deployment Templates
+# These templates provide various Redis/Valkey deployment patterns
+---
+# Single Instance Deployment (for development/caching)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: REDIS_NAME
+  namespace: NAMESPACE
+  labels:
+    app: REDIS_NAME
+    component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: REDIS_NAME
+  template:
+    metadata:
+      labels:
+        app: REDIS_NAME
+        component: cache
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+      containers:
+      - name: redis
+        image: valkey/valkey:8.0-alpine  # Or redis:7-alpine
+        command:
+        - valkey-server  # Or redis-server
+        args:
+        - /etc/redis/redis.conf
+        ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - valkey-cli -a $REDIS_PASSWORD ping || redis-cli -a $REDIS_PASSWORD ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - valkey-cli -a $REDIS_PASSWORD ping || redis-cli -a $REDIS_PASSWORD ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+        envFrom:
+        - secretRef:
+            name: REDIS_NAME-auth
+        volumeMounts:
+        - name: config
+          mountPath: /etc/redis
+          readOnly: true
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: config
+        configMap:
+          name: REDIS_NAME-config
+      - name: data
+        emptyDir: {}
+
+---
+# StatefulSet for Persistent Redis/Valkey
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: REDIS_NAME
+  namespace: NAMESPACE
+  labels:
+    app: REDIS_NAME
+    component: database
+spec:
+  serviceName: REDIS_NAME
+  replicas: 1
+  selector:
+    matchLabels:
+      app: REDIS_NAME
+  template:
+    metadata:
+      labels:
+        app: REDIS_NAME
+        component: database
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+      containers:
+      - name: redis
+        image: valkey/valkey:8.0-alpine
+        command:
+        - valkey-server
+        args:
+        - /etc/redis/redis.conf
+        ports:
+        - containerPort: 6379
+          name: redis
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        envFrom:
+        - secretRef:
+            name: REDIS_NAME-auth
+        volumeMounts:
+        - name: config
+          mountPath: /etc/redis
+          readOnly: true
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: config
+        configMap:
+          name: REDIS_NAME-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: REDIS_NAME
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: STORAGE_CLASS  # Replace with org storage class
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+# ConfigMap for Redis/Valkey Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: REDIS_NAME-config
+  namespace: NAMESPACE
+data:
+  redis.conf: |
+    # Redis/Valkey Configuration
+    
+    # Network
+    bind 0.0.0.0
+    protected-mode yes
+    port 6379
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+    
+    # General
+    daemonize no
+    pidfile /var/run/redis.pid
+    loglevel notice
+    databases 16
+    
+    # Persistence (choose one strategy)
+    # RDB snapshots
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+    
+    # AOF (Append Only File)
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    
+    # Memory Management
+    maxmemory MEMORY_LIMIT  # Replace with actual limit (e.g., 1gb)
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 5
+    
+    # Lazy freeing
+    lazyfree-lazy-eviction no
+    lazyfree-lazy-expire no
+    lazyfree-lazy-server-del no
+    replica-lazy-flush no
+    
+    # Security
+    requirepass ${REDIS_PASSWORD}
+    rename-command FLUSHDB ""
+    rename-command FLUSHALL ""
+    rename-command KEYS ""
+    rename-command CONFIG ""
+    
+    # Clients
+    maxclients 10000
+    
+    # Slow log
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+    
+    # Event notification
+    notify-keyspace-events ""
+    
+    # Advanced config
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    list-compress-depth 0
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+    hll-sparse-max-bytes 3000
+    stream-node-max-bytes 4096
+    stream-node-max-entries 100
+
+---
+# Service for Redis/Valkey
+apiVersion: v1
+kind: Service
+metadata:
+  name: REDIS_NAME
+  namespace: NAMESPACE
+  labels:
+    app: REDIS_NAME
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  selector:
+    app: REDIS_NAME
+
+---
+# Secret for Redis Authentication
+apiVersion: v1
+kind: Secret
+metadata:
+  name: REDIS_NAME-auth
+  namespace: NAMESPACE
+type: Opaque
+stringData:
+  REDIS_PASSWORD: GENERATE_SECURE_PASSWORD  # Generate or provide secure password
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: REDIS_NAME
+  namespace: NAMESPACE
+  labels:
+    app: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: REDIS_NAME
+  endpoints:
+  - port: redis
+    interval: 30s
+    path: /metrics
+
+---
+# Redis Sentinel Configuration (for HA)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: REDIS_NAME-sentinel-config
+  namespace: NAMESPACE
+data:
+  sentinel.conf: |
+    port 26379
+    dir /tmp
+    sentinel monitor mymaster REDIS_NAME 6379 2
+    sentinel auth-pass mymaster ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds mymaster 5000
+    sentinel parallel-syncs mymaster 1
+    sentinel failover-timeout mymaster 10000
+    sentinel deny-scripts-reconfig yes
+
+---
+# Example Redis Cluster Configuration (Advanced)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: REDIS_NAME-cluster-config
+  namespace: NAMESPACE
+data:
+  redis-cluster.conf: |
+    # Include base config
+    include /etc/redis/redis.conf
+    
+    # Cluster-specific settings
+    cluster-enabled yes
+    cluster-config-file nodes.conf
+    cluster-node-timeout 5000
+    cluster-announce-ip $(POD_IP)
+    cluster-announce-port 6379
+    cluster-announce-bus-port 16379
+    cluster-require-full-coverage yes

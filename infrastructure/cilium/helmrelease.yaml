@@ -1,0 +1,191 @@
+# Cilium CNI HelmRelease Template
+# Provides advanced networking with BGP support and observability
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cilium
+spec:
+  interval: 20m
+  chart:
+    spec:
+      chart: cilium
+      version: 1.16.5
+      sourceRef:
+        kind: HelmRepository
+        name: cilium
+        namespace: flux-system
+  values:
+    # Core configuration
+    cluster:
+      name: CLUSTER_NAME  # Replace with cluster name
+      id: CLUSTER_ID     # Replace with unique cluster ID (0-255)
+    
+    # IP Address Management
+    ipam:
+      mode: kubernetes
+      operator:
+        clusterPoolIPv4PodCIDRList:
+          - "10.244.0.0/16"  # Adjust to match cluster pod CIDR
+    
+    # Kubernetes configuration
+    k8s:
+      requireIPv4PodCIDR: true
+      requireIPv6PodCIDR: false
+    
+    # Enable BGP Control Plane
+    bgpControlPlane:
+      enabled: true
+    
+    # LoadBalancer configuration
+    loadBalancer:
+      algorithm: round_robin
+      mode: dsr  # Direct Server Return for performance
+      acceleration: native
+      serviceTopology: true
+    
+    # Hubble observability
+    hubble:
+      enabled: true
+      relay:
+        enabled: true
+        replicas: 1
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+      ui:
+        enabled: true
+        replicas: 1
+        ingress:
+          enabled: false  # Enable and configure per organization
+        resources:
+          limits:
+            cpu: 300m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+      metrics:
+        enabled:
+          - dns
+          - drop
+          - tcp
+          - flow
+          - icmp
+          - http
+        serviceMonitor:
+          enabled: true
+    
+    # Operator configuration
+    operator:
+      replicas: 2  # HA configuration
+      rollOutCiliumPods: true
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      prometheus:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    
+    # Agent configuration
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    
+    # Prometheus metrics
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        trustCRDsExist: true
+    
+    # Security policies
+    policyEnforcementMode: default
+    
+    # Host networking
+    hostPort:
+      enabled: true
+    nodePort:
+      enabled: true
+    externalIPs:
+      enabled: true
+    
+    # BPF configuration
+    bpf:
+      masquerade: true
+      clockProbe: true
+      preallocateMaps: true
+      lbMapMax: 65536
+      policyMapMax: 16384
+      monitorAggregation: medium
+      monitorInterval: "5s"
+      monitorFlags: "all"
+    
+    # Tunnel configuration (disabled for native routing)
+    tunnel: disabled
+    autoDirectNodeRoutes: true
+    nativeRoutingCIDR: CLUSTER_POD_CIDR  # Replace with cluster pod CIDR
+    
+    # Enable bandwidth manager for QoS
+    bandwidthManager:
+      enabled: true
+      bbr: true
+    
+    # MTU configuration
+    mtu: 0  # Auto-detect
+    
+    # Logging
+    debug:
+      enabled: false
+      verbose: ""
+    
+    # Cluster mesh (for multi-cluster)
+    clustermesh:
+      useAPIServer: false  # Enable if using cluster mesh
+    
+    # Encryption (optional)
+    encryption:
+      enabled: false
+      type: wireguard  # or ipsec
+      # nodeEncryption: true
+    
+    # Service account
+    serviceAccounts:
+      cilium:
+        create: true
+        annotations: {}
+      operator:
+        create: true
+        annotations: {}
+      hubble:
+        create: true
+        annotations: {}
+    
+    # Update strategy
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+    
+    # Affinity rules
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                k8s-app: cilium

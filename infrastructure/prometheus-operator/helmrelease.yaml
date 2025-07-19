@@ -13,3 +13,58 @@ spec:
         kind: HelmRepository
         name: prometheus
         namespace: flux-system
+  values:
+    # Infrastructure layer - operator only deployment
+    # Individual components are deployed separately for better control
+    alertmanager:
+      enabled: false
+    kubeStateMetrics:
+      enabled: false
+    grafana:
+      enabled: false
+    nodeExporter:
+      enabled: false
+    prometheus:
+      enabled: false
+    
+    # Prometheus Operator configuration
+    prometheusOperator:
+      enabled: true
+      admissionWebhooks:
+        deployment:
+          enabled: true
+          replicas: 1
+          strategy:
+            type: Recreate
+        caBundle: ""
+        patch:
+          enabled: true
+          image:
+            registry: registry.k8s.io
+            repository: ingress-nginx/kube-webhook-certgen
+        certManager:
+          enabled: true
+          issuerRef:
+            name: ORG_CA_ISSUER  # Replace with organization-specific issuer
+            kind: ClusterIssuer
+      image:
+        registry: quay.io
+        repository: prometheus-operator/prometheus-operator
+        tag: v0.78.2  # x-release-please-version
+      prometheusConfigReloader:
+        image:
+          registry: quay.io
+          repository: prometheus-operator/prometheus-config-reloader
+          tag: v0.78.2  # x-release-please-version
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534

@@ -1,8 +1,8 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: grafana
+namespace: haproxy-system
 resources:
-  - automation.yaml
-  - helmrelease.yaml
   - namespace.yaml
+  - helmrelease.yaml
+  - monitoring.yaml

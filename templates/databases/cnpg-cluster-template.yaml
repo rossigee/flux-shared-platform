@@ -1,0 +1,200 @@
+# CloudNative PostgreSQL Cluster Template
+# Replace CLUSTER_NAME, NAMESPACE, and other placeholders with actual values
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: CLUSTER_NAME
+  namespace: NAMESPACE
+spec:
+  # Number of PostgreSQL instances (1 primary + N-1 replicas)
+  instances: 3
+  
+  # PostgreSQL version
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.3
+  
+  # PostgreSQL configuration
+  postgresql:
+    parameters:
+      # Performance tuning
+      shared_buffers: "256MB"
+      effective_cache_size: "1GB"
+      max_connections: "200"
+      
+      # Replication settings
+      max_wal_size: "1GB"
+      min_wal_size: "80MB"
+      wal_level: "replica"
+      max_replication_slots: "10"
+      
+      # Query tuning
+      random_page_cost: "1.1"
+      effective_io_concurrency: "200"
+      
+      # Logging
+      log_statement: "mod"
+      log_duration: "off"
+      log_min_duration_statement: "1000"
+      log_checkpoints: "on"
+      log_connections: "on"
+      log_disconnections: "on"
+      log_lock_waits: "on"
+      
+      # Security
+      ssl: "on"
+      ssl_min_protocol_version: "TLSv1.2"
+      
+    # Shared preload libraries
+    shared_preload_libraries:
+      - "pg_stat_statements"
+      - "auto_explain"
+  
+  # Bootstrap configuration
+  bootstrap:
+    initdb:
+      database: APP_DATABASE  # Replace with application database name
+      owner: APP_USER        # Replace with application user
+      secret:
+        name: CLUSTER_NAME-app-auth
+      dataChecksums: true
+      encoding: "UTF8"
+      localeCollate: "en_US.UTF-8"
+      localeCType: "en_US.UTF-8"
+  
+  # Storage configuration
+  storage:
+    size: 10Gi
+    storageClass: STORAGE_CLASS  # Replace with organization storage class
+    # Volume snapshot for faster recovery
+    volumeSnapshot:
+      enabled: true
+      className: SNAPSHOT_CLASS  # Replace with snapshot class if available
+  
+  # Resource allocation
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  
+  # Monitoring
+  monitoring:
+    enabled: true
+    customQueries:
+      - name: "pg_stat_statements"
+        query: |
+          SELECT query, calls, total_time, mean_time, max_time
+          FROM pg_stat_statements
+          ORDER BY total_time DESC
+          LIMIT 20
+        metrics:
+          - query:
+              usage: LABEL
+          - calls:
+              usage: COUNTER
+          - total_time:
+              usage: COUNTER
+          - mean_time:
+              usage: GAUGE
+          - max_time:
+              usage: GAUGE
+  
+  # Backup configuration
+  backup:
+    retentionPolicy: "30d"
+    target: prefer-standby
+    
+    # S3/MinIO backup configuration
+    barmanObjectStore:
+      destinationPath: "s3://BUCKET_NAME/cnpg/CLUSTER_NAME"  # Replace with bucket
+      endpointURL: "https://S3_ENDPOINT"  # Replace with S3/MinIO endpoint
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-backup-s3
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-backup-s3
+          key: SECRET_ACCESS_KEY
+      wal:
+        retention: "7d"
+        maxParallel: 8
+      data:
+        compression: gzip
+        encryption: AES256
+        immediateCheckpoint: true
+        jobs: 2
+  
+  # Certificates
+  certificates:
+    # Reference to organization CA
+    serverCASecret: ORG_CA_SECRET  # Replace with organization CA secret
+    serverTLSSecret: CLUSTER_NAME-tls
+    replicationTLSSecret: CLUSTER_NAME-replication-tls
+    clientCASecret: ORG_CA_SECRET  # Replace with organization CA secret
+  
+  # Service configuration
+  managed:
+    services:
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: CLUSTER_NAME-rw
+            spec:
+              type: ClusterIP
+        - selectorType: ro
+          serviceTemplate:
+            metadata:
+              name: CLUSTER_NAME-ro
+            spec:
+              type: ClusterIP
+  
+  # Affinity rules for pod distribution
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: preferred
+  
+  # Node selector (optional)
+  # nodeSelector:
+  #   node-role.kubernetes.io/database: "true"
+  
+  # Tolerations (optional)
+  # tolerations:
+  #   - key: "database"
+  #     operator: "Equal"
+  #     value: "true"
+  #     effect: "NoSchedule"
+
+---
+# Secret template for application authentication
+apiVersion: v1
+kind: Secret
+metadata:
+  name: CLUSTER_NAME-app-auth
+  namespace: NAMESPACE
+type: kubernetes.io/basic-auth
+stringData:
+  username: APP_USER  # Replace with application username
+  password: GENERATE_SECURE_PASSWORD  # Generate secure password
+
+---
+# PodMonitor for Prometheus scraping
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: CLUSTER_NAME
+  namespace: NAMESPACE
+  labels:
+    app: prometheus
+    cnpg.io/cluster: CLUSTER_NAME
+spec:
+  selector:
+    matchLabels:
+      cnpg.io/cluster: CLUSTER_NAME
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics

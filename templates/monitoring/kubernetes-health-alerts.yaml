@@ -1,0 +1,159 @@
+# Kubernetes Health Alert Rules Template
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubernetes-health-alerts
+  labels:
+    app: prometheus
+    team: platform
+spec:
+  groups:
+    - name: kubernetes-nodes.rules
+      rules:
+        - alert: NodeDiskSpaceFillingUp
+          expr: |
+            (
+              node_filesystem_avail_bytes{fstype!="tmpfs",mountpoint!~"^/etc/.*"} / node_filesystem_size_bytes{fstype!="tmpfs",mountpoint!~"^/etc/.*"} * 100 < 15
+              and
+              predict_linear(node_filesystem_avail_bytes{fstype!="tmpfs",mountpoint!~"^/etc/.*"}[6h], 24*60*60) < 0
+            )
+          for: 1h
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Node disk space is filling up"
+            description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left and is filling up."
+        
+        - alert: NodeDiskSpaceCritical
+          expr: |
+            (
+              node_filesystem_avail_bytes{fstype!="tmpfs",mountpoint!~"^/etc/.*"} / node_filesystem_size_bytes{fstype!="tmpfs",mountpoint!~"^/etc/.*"} * 100 < 5
+            )
+          for: 15m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Node disk space critically low"
+            description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left."
+        
+        - alert: NodeMemoryPressure
+          expr: |
+            (
+              (
+                node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+              )
+              and
+              (
+                rate(node_vmstat_pgmajfault[5m]) > 1000
+              )
+            )
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Node under memory pressure"
+            description: "Node {{ $labels.instance }} is under memory pressure with {{ printf \"%.2f\" $value }}% memory available."
+        
+        - alert: NodeCPUHighUsage
+          expr: |
+            (
+              100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+            )
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Node CPU usage high"
+            description: "Node {{ $labels.instance }} has high CPU usage: {{ printf \"%.2f\" $value }}%."
+
+    - name: kubernetes-pods.rules
+      rules:
+        - alert: PodCrashLooping
+          expr: |
+            rate(kube_pod_container_status_restarts_total[15m]) * 60 * 15 > 0
+            and
+            kube_pod_container_status_running == 0
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Pod is crash looping"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is crash looping."
+        
+        - alert: PodNotReady
+          expr: |
+            sum by (namespace, pod) (
+              max by(namespace, pod) (
+                kube_pod_status_phase{phase=~"Pending|Unknown"}
+              ) * on(namespace, pod) group_left(owner_kind) topk by(namespace, pod) (
+                1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!="Job"})
+              )
+            ) > 0
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Pod not ready"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for more than 15 minutes."
+        
+        - alert: PodEvicted
+          expr: |
+            increase(kube_pod_status_phase{phase="Failed"}[1h]) > 0
+            and on(namespace, pod) kube_pod_status_reason{reason="Evicted"} == 1
+          for: 1m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Pod evicted"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} was evicted."
+
+    - name: kubernetes-storage.rules
+      rules:
+        - alert: PersistentVolumeFillingUp
+          expr: |
+            (
+              kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 15
+              and
+              predict_linear(kubelet_volume_stats_available_bytes[6h], 24*60*60) < 0
+            )
+          for: 1h
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "PersistentVolume filling up"
+            description: "PersistentVolume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is filling up ({{ printf \"%.2f\" $value }}% available)."
+        
+        - alert: PersistentVolumeCritical
+          expr: |
+            (
+              kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 5
+            )
+          for: 15m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "PersistentVolume critically low on space"
+            description: "PersistentVolume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has only {{ printf \"%.2f\" $value }}% space remaining."
+        
+        - alert: OrphanedPersistentVolumeClaim
+          expr: |
+            (
+              kube_persistentvolumeclaim_info unless on(persistentvolumeclaim, namespace) kube_pod_spec_volumes_persistentvolumeclaim_info
+            )
+          for: 24h
+          labels:
+            severity: info
+            team: platform
+          annotations:
+            summary: "Orphaned PersistentVolumeClaim detected"
+            description: "PersistentVolumeClaim {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is not being used by any pod for 24 hours."

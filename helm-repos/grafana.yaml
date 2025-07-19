@@ -1,0 +1,8 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: grafana
+spec:
+  interval: 60m
+  url: oci://ghcr.io/grafana/helm-charts

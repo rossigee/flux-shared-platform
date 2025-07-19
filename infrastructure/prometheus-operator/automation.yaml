@@ -1,0 +1,42 @@
+# Prometheus Operator Image Update Automation
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: prometheus-operator
+spec:
+  image: quay.io/prometheus-operator/prometheus-operator
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: prometheus-operator
+spec:
+  imageRepositoryRef:
+    name: prometheus-operator
+  policy:
+    semver:
+      range: '>=v0.78.0'
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: prometheus-config-reloader
+spec:
+  image: quay.io/prometheus-operator/prometheus-config-reloader
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: prometheus-config-reloader
+spec:
+  imageRepositoryRef:
+    name: prometheus-config-reloader
+  policy:
+    semver:
+      range: '>=v0.78.0'

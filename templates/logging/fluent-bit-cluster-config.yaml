@@ -1,0 +1,217 @@
+# Fluent Bit Cluster Configuration Template
+# This provides a comprehensive logging pipeline configuration
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFluentBitConfig
+metadata:
+  name: fluent-bit-config
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  service:
+    parsersFiles:
+      - /fluent-bit/parsers/parsers.conf
+    # Organization-specific settings
+    daemon: false
+    flushSeconds: 1
+    graceSeconds: 30
+    httpServer: true
+    httpListen: 0.0.0.0
+    httpPort: 2020
+    logLevel: info
+    storageBufferPath: /var/log/fluentbit-buffer
+    storageChecksum: false
+    storageMaxChunksUp: 128
+    storageMetrics: true
+    storageSync: normal
+
+  # Standard parsers for common log formats
+  parsersConfig: |
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%LZ
+        Time_Keep   true
+    
+    [PARSER]
+        Name        syslog
+        Format      regex
+        Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+        Time_Key    time
+        Time_Format %b %d %H:%M:%S
+    
+    [PARSER]
+        Name        kubernetes
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%LZ
+        Time_Keep   true
+        # Decode log field from JSON
+        Decode_Field_As escaped_utf8 log do_next
+        Decode_Field_As json log
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: systemd
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  systemd:
+    tag: systemd.*
+    path: /var/log/journal
+    db: /fluent-bit/systemd/systemd.db
+    dbSync: Normal
+    memBufLimit: 5MB
+    pauseOnChunksOverlimit: "on"
+    storageType: filesystem
+    stripUnderscores: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: kubernetes
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  tail:
+    tag: kube.*
+    path: /var/log/containers/*.log
+    excludePath: /var/log/containers/*_kube-system_*.log,/var/log/containers/*_kube-public_*.log
+    parser: cri
+    db: /fluent-bit/tail/kube.db
+    dbSync: Normal
+    memBufLimit: 5MB
+    pauseOnChunksOverlimit: "on"
+    refreshIntervalSeconds: 10
+    skipLongLines: true
+    storageType: filesystem
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: kubernetes-metadata
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  match: kube.*
+  filters:
+    - kubernetes:
+        bufferSize: 2MB
+        kubeCAFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        kubeTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubeURL: https://kubernetes.default.svc:443
+        kubeTagPrefix: kube.var.log.containers.
+        mergeLog: true
+        mergeLogKey: log_processed
+        k8sLoggingParser: true
+        k8sLoggingExclude: false
+        keepLog: true
+        annotations: true
+        labels: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: modify-records
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  match: "*"
+  filters:
+    - modify:
+        rules:
+          - add: cluster_name ${CLUSTER_NAME}
+          - add: region ${REGION}
+          - add: environment ${ENVIRONMENT}
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: grep-errors
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  match: kube.*
+  filters:
+    - grep:
+        regex: log (error|ERROR|Error|exception|Exception|EXCEPTION|fail|FAIL|Fail)
+
+---
+# Template for organization-specific outputs
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterOutput
+metadata:
+  name: loki-logs
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+spec:
+  match: "*"
+  loki:
+    host: LOKI_HOST  # Replace with organization's Loki endpoint
+    port: 3100
+    labels:
+      - job=fluentbit
+      - cluster=${CLUSTER_NAME}
+      - namespace=$kubernetes['namespace_name']
+      - pod=$kubernetes['pod_name']
+      - container=$kubernetes['container_name']
+      - stream=$stream
+    autoKubernetesLabels: false
+    labelMapPath: /fluent-bit/etc/labelmap.json
+    lineFormat: json
+    removeKeys: kubernetes,stream
+    retryLimit: 3
+    tls:
+      verify: true
+      caFile: /etc/ssl/certs/ca-certificates.crt
+
+---
+# Alternative output for S3/MinIO
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterOutput
+metadata:
+  name: s3-logs
+  labels:
+    fluentbit.fluent.io/enabled: "false"  # Enable per organization needs
+spec:
+  match: "*"
+  s3:
+    bucket: BUCKET_NAME  # Replace with organization bucket
+    endpoint: S3_ENDPOINT  # Replace with S3/MinIO endpoint
+    jsonDateFormat: iso8601
+    region: ${REGION}
+    totalFileSize: 50M
+    uploadChunkSize: 10M
+    uploadTimeout: 10m
+    usePutObject: true
+    s3KeyFormat: /logs/${CLUSTER_NAME}/%Y/%m/%d/${tag}_%{index}.json
+    storageClass: STANDARD
+    contentType: application/json
+    tls:
+      verify: true
+    retryLimit: 3
+
+---
+# Monitoring ServiceMonitor for Fluent Bit metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fluent-bit
+  labels:
+    app: fluent-bit
+spec:
+  jobLabel: app
+  selector:
+    matchLabels:
+      app: fluent-bit
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /api/v1/metrics/prometheus

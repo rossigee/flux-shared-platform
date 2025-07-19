@@ -1,0 +1,228 @@
+# Cilium BGP Configuration Templates
+# These templates provide BGP peering for LoadBalancer IP announcement
+---
+# BGP Cluster Configuration per Node
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPClusterConfig
+metadata:
+  name: cilium-bgp-NODE_NAME  # Replace with node/host name
+spec:
+  nodeSelector:
+    matchLabels:
+      ORG_LABEL/vmhost: NODE_NAME  # Replace ORG_LABEL with org-specific label
+      # Alternative selector:
+      # kubernetes.io/hostname: NODE_NAME
+  bgpInstances:
+  - name: NODE_NAME
+    localASN: LOCAL_ASN  # Replace with node's ASN (e.g., 65001)
+    peers:
+    - name: NODE_NAME-upstream
+      peerASN: PEER_ASN  # Replace with upstream router ASN
+      peerAddress: PEER_IP  # Replace with upstream router IP
+      peerConfigRef:
+        name: cilium-peer-with-services
+
+---
+# Shared BGP Peer Configuration
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPPeerConfig
+metadata:
+  name: cilium-peer-with-services
+spec:
+  # eBGP multihop configuration
+  ebgpMultihop: 3
+  
+  # BGP timers
+  timers:
+    connectRetryTimeSeconds: 30
+    holdTimeSeconds: 30
+    keepAliveTimeSeconds: 10
+  
+  # Graceful restart for zero-downtime updates
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 30
+  
+  # Address families and advertisements
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: service-ips
+
+---
+# BGP Advertisement Configuration
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPAdvertisement
+metadata:
+  name: service-ips
+  labels:
+    advertise: service-ips
+spec:
+  advertisements:
+    # Advertise pod CIDR for pod-to-pod communication
+    - advertisementType: "PodCIDR"
+      
+    # Advertise Cilium IP pools
+    - advertisementType: "CiliumPodIPPool"
+      
+    # Advertise service IPs
+    - advertisementType: "Service"
+      service:
+        addresses:
+          - ClusterIP
+          - ExternalIP
+          - LoadBalancerIP
+
+---
+# LoadBalancer IP Pool Configuration
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: ENVIRONMENT-lb-ips  # Replace with environment name
+spec:
+  blocks:
+  - cidr: "LB_SUBNET/MASK"  # Replace with LoadBalancer subnet (e.g., "10.189.1.0/24")
+  
+  # Optional: Service selector to limit which services can use this pool
+  # serviceSelector:
+  #   matchLabels:
+  #     environment: production
+
+---
+# Node-specific Network Configuration
+apiVersion: cilium.io/v2
+kind: CiliumNodeConfig
+metadata:
+  name: NODE_NAME
+  namespace: kube-system
+spec:
+  defaults:
+    # Primary network interface
+    device: enp1s0  # Adjust if different
+    
+    # Direct routing device (usually same as device)
+    direct-routing-device: enp1s0
+    
+    # Native routing CIDR for this node
+    ipv4-native-routing-cidr: NODE_SUBNET/MASK  # Replace with node's subnet
+  
+  nodeSelector:
+    matchLabels:
+      ORG_LABEL/vmhost: NODE_NAME  # Replace with org-specific label
+      # Alternative selector:
+      # kubernetes.io/hostname: NODE_NAME
+
+---
+# Essential Network Policy for Flux Cross-Node Communication
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: flux-cross-node-communication
+  namespace: flux-system
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:io.kubernetes.pod.namespace: flux-system
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: flux-system
+      toPorts:
+        - ports:
+            - port: "9090"  # source-controller
+              protocol: TCP
+            - port: "9292"  # notification-controller
+              protocol: TCP
+            - port: "8080"  # metrics
+              protocol: TCP
+            - port: "9093"  # alert-controller
+              protocol: TCP
+            - port: "9094"  # image-automation-controller
+              protocol: TCP
+  egress:
+    - toEntities:
+        - world    # External resources
+        - cluster  # Cluster resources
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: flux-system
+
+---
+# Example Service with Specific LoadBalancer IP
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-lb-service
+  namespace: default
+  annotations:
+    # Request specific IP from Cilium IPAM
+    io.cilium/lb-ipam-ips: "10.189.1.100"  # Must be within defined pool
+spec:
+  type: LoadBalancer
+  selector:
+    app: example
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+
+---
+# Multi-Cluster BGP Configuration (Advanced)
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPClusterConfig
+metadata:
+  name: cilium-bgp-multi-cluster
+spec:
+  # Apply to all nodes
+  nodeSelector: {}
+  bgpInstances:
+  - name: multi-cluster
+    localASN: LOCAL_ASN
+    peers:
+    # Peer with other clusters
+    - name: cluster-2
+      peerASN: REMOTE_CLUSTER_ASN
+      peerAddress: REMOTE_CLUSTER_IP
+      peerConfigRef:
+        name: cilium-peer-clusters
+    - name: cluster-3
+      peerASN: REMOTE_CLUSTER_ASN_2
+      peerAddress: REMOTE_CLUSTER_IP_2
+      peerConfigRef:
+        name: cilium-peer-clusters
+
+---
+# BGP Peer Config for Cluster Mesh
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPPeerConfig
+metadata:
+  name: cilium-peer-clusters
+spec:
+  authSecretRef: bgp-auth-secret  # Optional BGP authentication
+  ebgpMultihop: 10  # Higher for cross-site
+  timers:
+    connectRetryTimeSeconds: 60
+    holdTimeSeconds: 180
+    keepAliveTimeSeconds: 60
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 120
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: cluster-mesh
+
+---
+# BGP Authentication Secret (Optional)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bgp-auth-secret
+  namespace: kube-system
+type: Opaque
+stringData:
+  password: BGP_AUTH_PASSWORD  # Replace with actual password

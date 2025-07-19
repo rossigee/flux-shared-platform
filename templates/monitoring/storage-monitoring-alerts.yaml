@@ -1,0 +1,159 @@
+# Storage Monitoring Alert Rules Template
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: storage-monitoring-alerts
+  labels:
+    app: prometheus
+    team: platform
+spec:
+  groups:
+    - name: storage-capacity.rules
+      rules:
+        - alert: StorageVolumeGroupCapacity
+          expr: |
+            (
+              lvm_vg_free_bytes / lvm_vg_size_bytes * 100 < 20
+            )
+          for: 30m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Storage volume group capacity low"
+            description: "Volume group {{ $labels.vg_name }} on {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% free space remaining."
+        
+        - alert: StorageVolumeGroupCritical
+          expr: |
+            (
+              lvm_vg_free_bytes / lvm_vg_size_bytes * 100 < 10
+            )
+          for: 15m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Storage volume group critically low"
+            description: "Volume group {{ $labels.vg_name }} on {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% free space remaining."
+        
+        - alert: NamespaceStorageQuotaExceeded
+          expr: |
+            (
+              sum by (namespace) (kubelet_volume_stats_used_bytes)
+              /
+              sum by (namespace) (kube_resourcequota{resource="persistentvolumeclaims", type="hard"} * 1073741824)
+            ) > 0.8
+          for: 30m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Namespace storage quota exceeded"
+            description: "Namespace {{ $labels.namespace }} is using {{ printf \"%.2f\" (mul $value 100) }}% of its storage quota."
+
+    - name: storage-growth.rules
+      rules:
+        - alert: StorageGrowthPrediction
+          expr: |
+            (
+              predict_linear(node_filesystem_avail_bytes{fstype!="tmpfs",mountpoint!~"^/etc/.*"}[24h], 7*24*60*60) < 0
+            )
+          for: 1h
+          labels:
+            severity: info
+            team: platform
+          annotations:
+            summary: "Storage expected to fill in 7 days"
+            description: "Filesystem {{ $labels.device }} on {{ $labels.instance }} is predicted to fill up within 7 days based on current growth rate."
+        
+        - alert: PVCGrowthPrediction
+          expr: |
+            (
+              predict_linear(kubelet_volume_stats_used_bytes[24h], 7*24*60*60) > on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes
+            )
+          for: 1h
+          labels:
+            severity: info
+            team: platform
+          annotations:
+            summary: "PVC expected to fill in 7 days"
+            description: "PersistentVolumeClaim {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is predicted to fill up within 7 days."
+
+    - name: minio-storage.rules
+      rules:
+        - alert: MinIODown
+          expr: up{job="minio"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "MinIO is down"
+            description: "MinIO instance {{ $labels.instance }} is down for more than 5 minutes."
+        
+        - alert: MinIODiskOffline
+          expr: minio_cluster_disk_offline_total > 0
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "MinIO disk offline"
+            description: "MinIO has {{ $value }} disk(s) offline."
+        
+        - alert: MinIOHighErrorRate
+          expr: |
+            (
+              increase(minio_s3_requests_errors_total[5m])
+              /
+              increase(minio_s3_requests_total[5m])
+            ) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "MinIO high error rate"
+            description: "MinIO has high error rate: {{ printf \"%.2f\" (mul $value 100) }}% for more than 10 minutes."
+        
+        - alert: MinIOBucketSizeGrowth
+          expr: |
+            (
+              predict_linear(minio_bucket_usage_total_bytes[24h], 7*24*60*60) > 1099511627776
+            )
+          for: 1h
+          labels:
+            severity: info
+            team: platform
+          annotations:
+            summary: "MinIO bucket size growing rapidly"
+            description: "MinIO bucket {{ $labels.bucket }} is predicted to exceed 1TB within 7 days."
+
+    - name: backup-storage.rules
+      rules:
+        - alert: BackupStorageSpaceLow
+          expr: |
+            (
+              node_filesystem_avail_bytes{mountpoint=~".*/backup.*|.*/backups.*"} / node_filesystem_size_bytes{mountpoint=~".*/backup.*|.*/backups.*"} * 100 < 20
+            )
+          for: 1h
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Backup storage space low"
+            description: "Backup filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% space remaining."
+        
+        - alert: BackupRetentionViolation
+          expr: |
+            (
+              time() - on(job) kube_job_status_completion_time{condition="Complete", job_name=~".*cleanup.*|.*retention.*"}
+            ) > 172800
+          for: 1h
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Backup retention cleanup overdue"
+            description: "Backup retention cleanup job {{ $labels.job_name }} has not run successfully in the last 48 hours."

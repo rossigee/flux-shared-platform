@@ -1,0 +1,247 @@
+# External DNS Provider Configuration Templates
+# These are example patches for common DNS providers
+---
+# Cloudflare Provider Patch
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-cloudflare
+  namespace: flux-system
+spec:
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/provider
+          value: cloudflare
+        - op: replace
+          path: /spec/values/domainFilters
+          value:
+            - example.com
+            - example.org
+        - op: add
+          path: /spec/values/extraArgs
+          value:
+            - --cloudflare-proxied
+            - --cloudflare-dns-records-per-page=5000
+        - op: add
+          path: /spec/values/env
+          value:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-api-token
+                  key: api-token
+      target:
+        kind: HelmRelease
+        name: external-dns
+
+---
+# AWS Route53 Provider Patch
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-route53
+  namespace: flux-system
+spec:
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/provider
+          value: aws
+        - op: replace
+          path: /spec/values/domainFilters
+          value:
+            - example.com
+        - op: add
+          path: /spec/values/extraArgs
+          value:
+            - --aws-zone-type=public
+            - --aws-prefer-cname
+            - --aws-batch-change-size=1000
+        - op: add
+          path: /spec/values/serviceAccount/annotations
+          value:
+            eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/external-dns
+      target:
+        kind: HelmRelease
+        name: external-dns
+
+---
+# Google Cloud DNS Provider Patch
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-google
+  namespace: flux-system
+spec:
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/provider
+          value: google
+        - op: replace
+          path: /spec/values/domainFilters
+          value:
+            - example.com
+        - op: add
+          path: /spec/values/extraArgs
+          value:
+            - --google-project=my-project-id
+            - --google-zone-visibility=public
+        - op: add
+          path: /spec/values/serviceAccount/annotations
+          value:
+            iam.gke.io/gcp-service-account: external-dns@my-project.iam.gserviceaccount.com
+      target:
+        kind: HelmRelease
+        name: external-dns
+
+---
+# Azure DNS Provider Patch
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-azure
+  namespace: flux-system
+spec:
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/provider
+          value: azure
+        - op: replace
+          path: /spec/values/domainFilters
+          value:
+            - example.com
+        - op: add
+          path: /spec/values/extraArgs
+          value:
+            - --azure-resource-group=my-resource-group
+            - --azure-subscription-id=12345678-1234-1234-1234-123456789012
+        - op: add
+          path: /spec/values/env
+          value:
+            - name: AZURE_TENANT_ID
+              value: "12345678-1234-1234-1234-123456789012"
+            - name: AZURE_CLIENT_ID
+              value: "12345678-1234-1234-1234-123456789012"
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: azure-service-principal
+                  key: client-secret
+      target:
+        kind: HelmRelease
+        name: external-dns
+
+---
+# RFC2136 (BIND) Provider Patch - For on-premises DNS
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-rfc2136
+  namespace: flux-system
+spec:
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/provider
+          value: rfc2136
+        - op: replace
+          path: /spec/values/domainFilters
+          value:
+            - example.local
+            - k8s.example.com
+        - op: add
+          path: /spec/values/extraArgs
+          value:
+            - --rfc2136-host=10.0.0.1
+            - --rfc2136-port=53
+            - --rfc2136-zone=example.local
+            - --rfc2136-tsig-keyname=externaldns-key
+            - --rfc2136-tsig-secret-alg=hmac-sha256
+        - op: add
+          path: /spec/values/env
+          value:
+            - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: rfc2136-tsig-secret
+                  key: tsig-secret
+      target:
+        kind: HelmRelease
+        name: external-dns
+
+---
+# PowerDNS Provider Patch
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-dns-pdns
+  namespace: flux-system
+spec:
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/provider
+          value: pdns
+        - op: replace
+          path: /spec/values/domainFilters
+          value:
+            - example.local
+        - op: add
+          path: /spec/values/extraArgs
+          value:
+            - --pdns-server=http://pdns-api.example.com
+            - --pdns-api-key=$(PDNS_API_KEY)
+        - op: add
+          path: /spec/values/env
+          value:
+            - name: PDNS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pdns-api-key
+                  key: api-key
+      target:
+        kind: HelmRelease
+        name: external-dns
+
+---
+# Example Secret for Cloudflare
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-api-token
+  namespace: external-dns
+type: Opaque
+stringData:
+  api-token: "YOUR_CLOUDFLARE_API_TOKEN"  # Replace with actual token
+
+---
+# Example Secret for RFC2136 TSIG
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rfc2136-tsig-secret
+  namespace: external-dns
+type: Opaque
+stringData:
+  tsig-secret: "YOUR_BASE64_ENCODED_TSIG_SECRET"  # Replace with actual secret
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: external-dns
+  namespace: external-dns
+  labels:
+    app: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-dns
+  endpoints:
+    - port: http
+      interval: 30s
+      path: /metrics

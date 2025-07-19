@@ -5,7 +5,14 @@ namespace: flux-system
 resources:
   - jetstack.yaml
   - external-secrets.yaml
+  - external-dns-repo.yaml
   - argoproj.yaml
   - prometheus.yaml
   - kubescape.yaml
   - kyverno.yaml
+  - grafana.yaml
+  - fluent.yaml
+  - cloudnative-pg.yaml
+  - metalstack.yaml
+  - cilium.yaml
+  - haproxytech.yaml

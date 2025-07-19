@@ -1,0 +1,138 @@
+# LVM Storage Class Templates
+# These provide standard storage configurations for local LVM-based storage
+---
+# High-performance SSD storage class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm-ssd
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: lvm.csi.metal-stack.io
+parameters:
+  type: linear
+  # Organization-specific LVM volume group
+  vgName: VG_NAME_SSD  # Replace with actual VG name for SSDs
+  # Filesystem options
+  fsType: xfs
+  # Mount options for performance
+  mountOptions: "noatime,nodiratime,nobarrier"
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+# Standard HDD storage class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm-hdd
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: lvm.csi.metal-stack.io
+parameters:
+  type: linear
+  # Organization-specific LVM volume group
+  vgName: VG_NAME_HDD  # Replace with actual VG name for HDDs
+  # Filesystem options
+  fsType: ext4
+  # Standard mount options
+  mountOptions: "defaults,noatime"
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+# Striped storage class for high throughput
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm-striped
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: lvm.csi.metal-stack.io
+parameters:
+  type: striped
+  stripeSize: "64"  # 64KB stripe size
+  # Organization-specific LVM volume group
+  vgName: VG_NAME_STRIPED  # Replace with actual VG name
+  # Filesystem for large files
+  fsType: xfs
+  # Mount options for throughput
+  mountOptions: "noatime,nodiratime,largeio,inode64,swalloc"
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+# Mirrored storage class for critical data
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm-mirrored
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: lvm.csi.metal-stack.io
+parameters:
+  type: mirror
+  mirrors: "2"  # Number of mirrors
+  # Organization-specific LVM volume group
+  vgName: VG_NAME_MIRROR  # Replace with actual VG name
+  # Filesystem with journaling
+  fsType: ext4
+  # Conservative mount options
+  mountOptions: "defaults,noatime,barrier=1,data=journal"
+reclaimPolicy: Retain  # Keep data on PV deletion
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+# Thin-provisioned storage class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm-thin
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: lvm.csi.metal-stack.io
+parameters:
+  type: thin
+  # Organization-specific thin pool
+  thinPoolName: THIN_POOL_NAME  # Replace with actual thin pool name
+  vgName: VG_NAME_THIN  # Replace with actual VG name
+  # Filesystem options
+  fsType: xfs
+  # Standard mount options
+  mountOptions: "defaults,noatime"
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+
+---
+# Snapshot class for LVM volumes
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: lvm-snapshot
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: lvm.csi.metal-stack.io
+deletionPolicy: Delete
+parameters:
+  # Snapshot parameters
+  snapSizeMultiplier: "1.5"  # Snapshot size = 1.5x volume size
+
+---
+# Example PVC using LVM storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: example-lvm-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: lvm-hdd
+  resources:
+    requests:
+      storage: 10Gi
