@@ -1,0 +1,103 @@
+---
+# CRITICAL FIX: Do not remove - resolves INC-2025-07-13-001
+# This policy fixes cross-node communication between Flux components
+# Without this, kustomize-controller cannot reach source-controller when on different nodes
+# Symptoms: "dial tcp IP:80: connect: operation not permitted" errors
+# Root cause: Cilium default deny blocks cross-node pod communication
+# See: /home/rossg/clients/golder/hugo/infra/docs/content/incidents/2025-07-13-flux-cross-node-connectivity.md
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: flux-cross-node-communication
+  namespace: flux-system
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:io.kubernetes.pod.namespace: flux-system
+  ingress:
+    # Allow all Flux components to communicate with each other across nodes
+    # This is essential for kustomize-controller to fetch artifacts from source-controller
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: flux-system
+      toPorts:
+        # source-controller artifact server (service port)
+        - ports:
+            - port: "80"
+              protocol: TCP
+        # source-controller artifact server (pod port)
+        - ports:
+            - port: "9090"
+              protocol: TCP
+        # notification-controller webhook receiver
+        - ports:
+            - port: "9292"
+              protocol: TCP
+        # All controllers health and metrics
+        - ports:
+            - port: "8080"
+              protocol: TCP
+            - port: "9440"
+              protocol: TCP
+    # Allow Prometheus scraping
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+  egress:
+    # Allow all egress (Flux needs to reach various external services)
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: flux-system
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "9090"
+              protocol: TCP
+            - port: "9292"
+              protocol: TCP
+    - toEntities:
+        - world
+        - cluster
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: source-controller-service
+  namespace: flux-system
+spec:
+  endpointSelector:
+    matchLabels:
+      app: source-controller
+  ingress:
+    # Allow any pod in the cluster to fetch artifacts
+    - fromEntities:
+        - cluster
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: notification-controller-webhook
+  namespace: flux-system
+spec:
+  endpointSelector:
+    matchLabels:
+      app: notification-controller
+  ingress:
+    # Allow webhooks from external sources
+    - fromEntities:
+        - world
+        - cluster
+      toPorts:
+        - ports:
+            - port: "9292"
+              protocol: TCP
