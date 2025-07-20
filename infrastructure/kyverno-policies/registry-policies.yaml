@@ -9,9 +9,10 @@ metadata:
     policies.kyverno.io/severity: "high"
     policies.kyverno.io/description: >-
       Restricts container images to approved registries only: harbor.golder.lan
-      (internal), ghcr.io, vaultwarden/*, hashicorp, goharbor, docker.gitea.com,
-      docker.io/dragonflyoss/*, and registry.k8s.io to prevent use of untrusted
-      image sources.
+      (internal), specific ghcr.io namespaces (cloudnative-pg, codecentric, external-secrets,
+      fluent, fluxcd, grafana, kubeshop, kyverno, linkchecker, metal-stack, netbox-community),
+      vaultwarden/*, hashicorp, goharbor, docker.gitea.com, docker.io/dragonflyoss/*, 
+      and registry.k8s.io to prevent use of untrusted image sources.
 spec:
   validationFailureAction: enforce
   background: true
@@ -32,11 +33,11 @@ spec:
         pattern:
           spec:
             containers:
-            - image: "harbor.golder.lan/* | ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "harbor.golder.lan/* | ghcr.io/cloudnative-pg/* | ghcr.io/codecentric/* | ghcr.io/external-secrets/* | ghcr.io/fluent/* | ghcr.io/fluxcd/* | ghcr.io/grafana/* | ghcr.io/kubeshop/* | ghcr.io/kyverno/* | ghcr.io/linkchecker/* | ghcr.io/metal-stack/* | ghcr.io/netbox-community/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
             =(initContainers):
-            - image: "harbor.golder.lan/* | ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "harbor.golder.lan/* | ghcr.io/cloudnative-pg/* | ghcr.io/codecentric/* | ghcr.io/external-secrets/* | ghcr.io/fluent/* | ghcr.io/fluxcd/* | ghcr.io/grafana/* | ghcr.io/kubeshop/* | ghcr.io/kyverno/* | ghcr.io/linkchecker/* | ghcr.io/metal-stack/* | ghcr.io/netbox-community/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
             =(ephemeralContainers):
-            - image: "harbor.golder.lan/* | ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "harbor.golder.lan/* | ghcr.io/cloudnative-pg/* | ghcr.io/codecentric/* | ghcr.io/external-secrets/* | ghcr.io/fluent/* | ghcr.io/fluxcd/* | ghcr.io/grafana/* | ghcr.io/kubeshop/* | ghcr.io/kyverno/* | ghcr.io/linkchecker/* | ghcr.io/metal-stack/* | ghcr.io/netbox-community/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -76,7 +77,7 @@ spec:
         # Allow public registries without secrets
         - spec:
             containers:
-            - image: "ghcr.io/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
+            - image: "ghcr.io/cloudnative-pg/* | ghcr.io/codecentric/* | ghcr.io/external-secrets/* | ghcr.io/fluent/* | ghcr.io/fluxcd/* | ghcr.io/grafana/* | ghcr.io/kubeshop/* | ghcr.io/kyverno/* | ghcr.io/linkchecker/* | ghcr.io/metal-stack/* | ghcr.io/netbox-community/* | vaultwarden/* | hashicorp/* | goharbor/* | docker.gitea.com/* | docker.io/dragonflyoss/* | registry.k8s.io/* | xpkg.upbound.io/* | xpkg.crossplane.io/* | oci.external-secrets.io/*"
         # Require secrets for private registry
         - spec:
             containers:
