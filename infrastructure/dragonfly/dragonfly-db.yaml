@@ -34,12 +34,9 @@ spec:
         fsGroup: 999
         seccompProfile:
           type: RuntimeDefault
-      # Image pull secrets for private registry
-      imagePullSecrets:
-        - name: harbor-credentials
       containers:
       - name: mysql
-        image: harbor.golder.lan/dockerhub/library/mysql:8.0
+        image: docker.io/library/mysql:8.0
         ports:
         - containerPort: 3306
           name: mysql
