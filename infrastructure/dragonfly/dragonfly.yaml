@@ -4,6 +4,7 @@ metadata:
   name: dragonfly
   namespace: dragonfly-system
 spec:
+  serviceAccountName: helm-controller
   interval: 10m
   timeout: 10m
   chart:
@@ -13,7 +14,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: dragonfly
-        namespace: flux-system
+        namespace: dragonfly-system
   values:
     # Disable MySQL and Redis - use external Valkey instead
     mysql:
