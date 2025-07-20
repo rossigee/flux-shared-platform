@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: dragonfly-system
 resources:
   - namespace.yaml
-  - dragonfly-db.yaml
   - valkey.yaml
   - dragonfly.yaml
   - proxy-service.yaml

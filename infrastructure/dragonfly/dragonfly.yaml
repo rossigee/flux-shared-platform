@@ -28,20 +28,15 @@ spec:
       port: 6379
       # password: configured via cluster-specific External Secrets
 
-    # Use dedicated Dragonfly MySQL database
+    # Disable MySQL - using PostgreSQL instead
     externalMysql:
-      migrate: true
-      host: "dragonfly-mysql.dragonfly-system.svc.cluster.local"
-      port: 3306
-      username: "dragonfly"
-      # password: configured via cluster-specific External Secrets
-      database: "dragonfly"
+      enable: false
 
     # Manager configuration
     manager:
       replicas: 1
       image:
-        registry: harbor.acme.lan
+        registry: harbor.golder.lan
         repository: dockerhub/dragonflyoss/manager
       grpc:
         enable: true
@@ -59,7 +54,7 @@ spec:
     scheduler:
       replicas: 1
       image:
-        registry: harbor.acme.lan
+        registry: harbor.golder.lan
         repository: dockerhub/dragonflyoss/scheduler
       metrics:
         enable: true
@@ -76,7 +71,7 @@ spec:
       enable: true
       replicas: 1
       image:
-        registry: harbor.acme.lan
+        registry: harbor.golder.lan
         repository: dockerhub/dragonflyoss/dfdaemon
       persistence:
         enabled: true
@@ -96,7 +91,7 @@ spec:
     client:
       enable: true
       image:
-        registry: harbor.acme.lan
+        registry: harbor.golder.lan
         repository: dockerhub/dragonflyoss/dfdaemon
       hostNetwork: false  # Changed: Use pod network instead
       dnsPolicy: ClusterFirst
@@ -119,7 +114,7 @@ spec:
           # Proxy configuration for container registries
           registryMirror:
             # Harbor proxy
-            - host: harbor.acme.lan
+            - host: harbor.golder.lan
               insecure: false
               direct: false
             # Docker Hub proxy through P2P
