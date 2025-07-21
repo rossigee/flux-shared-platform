@@ -12,7 +12,7 @@ metadata:
       no root user, no host namespaces. Allows images from approved
       registries including harbor.golder.lan.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: disallow-privileged-containers

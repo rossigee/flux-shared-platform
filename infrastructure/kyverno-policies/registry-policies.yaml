@@ -16,7 +16,7 @@ metadata:
       docker.gitea.com, dragonflyoss/*, and registry.k8s.io to prevent use of 
       untrusted image sources.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: validate-registries
@@ -54,7 +54,7 @@ metadata:
       imagePullSecrets for authentication, while allowing public registries
       without authentication (audit mode).
 spec:
-  validationFailureAction: audit  # Start with audit
+  validationFailureAction: Audit  # Start with audit
   background: true
   rules:
     - name: validate-imagepullsecrets

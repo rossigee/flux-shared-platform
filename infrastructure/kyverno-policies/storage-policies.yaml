@@ -12,7 +12,7 @@ metadata:
       and accessModes to be specified, and prevents use of deprecated
       'longhorn' storage class in favor of 'lvmpv-xfs' or 'lvmpv-ext4'.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     # Require storage class for PVCs
@@ -68,7 +68,7 @@ metadata:
       with approved storage classes (lvmpv-xfs or lvmpv-ext4) to ensure
       proper data persistence and performance.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     # Require PVC templates for StatefulSets

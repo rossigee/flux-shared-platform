@@ -12,7 +12,7 @@ metadata:
       requires subjects in role bindings, and disallows wildcard (*) verbs
       in custom roles to implement least privilege access control.
 spec:
-  validationFailureAction: audit
+  validationFailureAction: Audit
   background: true
   rules:
     # Disallow use of cluster-admin
@@ -98,7 +98,7 @@ metadata:
       on pods unless specifically needed, reducing the attack surface by
       preventing unnecessary token exposure in containers.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     # Disallow automountServiceAccountToken by default

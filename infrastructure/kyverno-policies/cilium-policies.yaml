@@ -12,7 +12,7 @@ metadata:
       namespaces and recommends egress rules for better security. Ensures
       proper network segmentation with Cilium's eBPF-based enforcement.
 spec:
-  validationFailureAction: audit
+  validationFailureAction: Audit
   background: true
   rules:
     # Require Cilium network policies for new namespaces

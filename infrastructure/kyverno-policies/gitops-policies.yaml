@@ -12,7 +12,7 @@ metadata:
       health checks, timeouts, and retry configurations for Flux
       Kustomizations and HelmReleases to ensure reliable deployments.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     # Require prune to be explicitly set
@@ -91,7 +91,7 @@ metadata:
       annotation to manually managed ConfigMaps and Secrets to prevent
       Flux from overwriting manual changes (audit mode).
 spec:
-  validationFailureAction: audit
+  validationFailureAction: Audit
   background: true
   rules:
     # Recommend flux ignore annotation for manually managed resources

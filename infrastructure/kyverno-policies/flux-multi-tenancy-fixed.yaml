@@ -12,7 +12,7 @@ metadata:
       on all Kustomizations and HelmReleases, and ensuring sourceRef.namespace
       matches the resource namespace to prevent cross-namespace access.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   rules:
     # Require serviceAccountName for all Flux resources
     - name: serviceAccountName
