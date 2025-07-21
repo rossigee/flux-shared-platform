@@ -7,6 +7,7 @@ metadata:
     kubernetes.io/description: "Prometheus Operator provides Kubernetes-native deployment and management of Prometheus and related monitoring components"
 spec:
   interval: 20m
+  timeout: 10m
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -14,7 +15,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: prometheus
-        namespace: flux-system
+        # namespace: defaults to same as HelmRelease for Kyverno policy compliance
   values:
     # Infrastructure layer - operator only deployment
     # Individual components are deployed separately for better control

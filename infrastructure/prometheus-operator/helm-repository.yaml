@@ -1,0 +1,10 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: prometheus
+  annotations:
+    kubernetes.io/description: "Prometheus community Helm charts repository"
+spec:
+  interval: 24h
+  url: https://prometheus-community.github.io/helm-charts
