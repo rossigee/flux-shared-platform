@@ -9,7 +9,7 @@ resources:
   - crossplane-providers-exception.yaml
   - external-secrets-exception.yaml
   - flux-multi-tenancy-fixed.yaml
-  - flux-multi-tenancy.yaml
+  # - flux-multi-tenancy.yaml  # Commented out - using flux-multi-tenancy-fixed.yaml instead
   - gitea-exception.yaml
   - gitops-policies.yaml
   - keycloak-exception.yaml
