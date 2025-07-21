@@ -13,7 +13,7 @@ spec:
       version: 5.25.1
       sourceRef:
         kind: HelmRepository
-        name: chart-prometheus
+        name: prometheus
         namespace: flux-system
   values:
     # Resource constraints for efficiency
