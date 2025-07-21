@@ -49,18 +49,11 @@ spec:
             - port: "8080"
               protocol: TCP
   egress:
-    # Allow all egress (Flux needs to reach various external services)
+    # Allow unrestricted communication within flux-system namespace
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: flux-system
-      toPorts:
-        - ports:
-            - port: "80"
-              protocol: TCP
-            - port: "9090"
-              protocol: TCP
-            - port: "9292"
-              protocol: TCP
+    # Allow all external egress (Flux needs to reach Git, registries, etc.)
     - toEntities:
         - world
         - cluster
