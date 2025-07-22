@@ -1,0 +1,10 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: jetstack
+  annotations:
+    kubernetes.io/description: "Jetstack charts including cert-manager for certificate management and TLS automation"
+spec:
+  interval: 60m
+  url: https://charts.jetstack.io
