@@ -1,0 +1,11 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: hashicorp
+  annotations:
+    kubernetes.io/description: "HashiCorp Helm charts including Vault for secrets management"
+spec:
+  interval: 18m
+  provider: generic
+  url: https://helm.releases.hashicorp.com
