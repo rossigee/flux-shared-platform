@@ -12,8 +12,10 @@ metadata:
       namespaces and recommends egress rules for better security. Ensures
       proper network segmentation with Cilium's eBPF-based enforcement.
 spec:
-  validationFailureAction: Audit
+  admission: true
   background: true
+  emitWarning: false            # Can be overridden per cluster
+  validationFailureAction: Audit  # AUDIT MODE ONLY
   rules:
     # Require Cilium network policies for new namespaces
     - name: require-cilium-policies
@@ -29,6 +31,11 @@ spec:
           - kube-system
           - kube-public
           - kube-node-lease
+          - vault                   # Vault has custom network requirements
+          - haproxy-system          # HAProxy needs broad egress access
+          - external-secrets        # May need broad egress access
+          - fluent-operator         # May need broad egress access
+      skipBackgroundRequests: true
       generate:
         apiVersion: cilium.io/v2
         kind: CiliumNetworkPolicy
@@ -36,6 +43,9 @@ spec:
         namespace: "{{request.object.metadata.name}}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              kubernetes.io/description: "Auto-generated default deny ingress policy"
           spec:
             description: "Default deny all ingress traffic"
             endpointSelector: {}
@@ -51,7 +61,9 @@ spec:
         - resources:
             kinds:
             - CiliumNetworkPolicy
+      skipBackgroundRequests: true
       validate:
+        allowExistingViolations: true
         message: "Consider defining egress rules for better security"
         pattern:
           spec:
