@@ -1,0 +1,122 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: lvm-storage-alerts
+  namespace: lvm-monitoring
+  labels:
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: lvm-storage
+    interval: 5m
+    rules:
+    # Node storage alerts
+    - alert: NodeStorageCapacityLow
+      expr: |
+        (k8s_node_storage_allocatable_bytes / k8s_node_storage_capacity_bytes) < 0.2
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node {{ $labels.node }} has low storage capacity"
+        description: "Node {{ $labels.node }} in cluster {{ $labels.cluster }} has less than 20% allocatable storage remaining"
+
+    # Namespace storage alerts
+    - alert: NamespaceStorageHigh
+      expr: |
+        k8s_namespace_storage_allocated_bytes > 100 * 1024 * 1024 * 1024  # 100GB
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Namespace {{ $labels.namespace }} using high storage"
+        description: "Namespace {{ $labels.namespace }} in cluster {{ $labels.cluster }} has allocated more than 100GB of storage"
+
+    # Orphaned PVC alerts
+    - alert: OrphanedPVCsHigh
+      expr: |
+        k8s_orphaned_pvc_count > 10
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High number of orphaned PVCs"
+        description: "Cluster {{ $labels.cluster }} has {{ $value }} orphaned PVCs that should be cleaned up"
+
+    - alert: OrphanedPVCsCritical
+      expr: |
+        k8s_orphaned_pvc_count > 20
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Critical number of orphaned PVCs"
+        description: "Cluster {{ $labels.cluster }} has {{ $value }} orphaned PVCs - immediate cleanup required"
+
+    # Failed PVC alerts
+    - alert: FailedPVCs
+      expr: |
+        k8s_failed_pvc_count > 0
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Failed PVCs detected"
+        description: "Cluster {{ $labels.cluster }} has {{ $value }} failed or pending PVCs"
+
+    # Evicted pods alerts
+    - alert: EvictedPodsHigh
+      expr: |
+        k8s_evicted_pod_count > 50
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High number of evicted pods"
+        description: "Cluster {{ $labels.cluster }} has {{ $value }} evicted pods - possible disk pressure"
+
+    - alert: EvictedPodsIncreasing
+      expr: |
+        rate(k8s_evicted_pod_count[5m]) > 0.1
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Evicted pods rapidly increasing"
+        description: "Cluster {{ $labels.cluster }} is evicting pods at {{ $value }} pods/second"
+
+    # CNPG database alerts
+    - alert: CNPGClusterNotReady
+      expr: |
+        k8s_cnpg_cluster_ready == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "CNPG cluster {{ $labels.cnpg_cluster }} not ready"
+        description: "PostgreSQL cluster {{ $labels.cnpg_cluster }} in namespace {{ $labels.namespace }} is not ready"
+
+    # Storage growth alerts
+    - alert: StorageGrowthHigh
+      expr: |
+        predict_linear(k8s_namespace_storage_allocated_bytes[1h], 7 * 24 * 3600) >
+        2 * k8s_namespace_storage_allocated_bytes
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Rapid storage growth in namespace {{ $labels.namespace }}"
+        description: "Namespace {{ $labels.namespace }} storage is predicted to double within 7 days at current growth rate"
+
+    # Missing metrics alert
+    - alert: LVMMetricsCollectorDown
+      expr: |
+        up{job="lvm_storage_exporter"} == 0
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "LVM metrics collector is down"
+        description: "LVM storage metrics have not been collected for cluster {{ $labels.cluster }} in the last 10 minutes"

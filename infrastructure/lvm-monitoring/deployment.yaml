@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lvm-metrics-exporter
+  namespace: lvm-monitoring
+  labels:
+    app: lvm-metrics-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lvm-metrics-exporter
+  template:
+    metadata:
+      labels:
+        app: lvm-metrics-exporter
+    spec:
+      serviceAccountName: lvm-monitor
+      containers:
+      - name: metrics-exporter
+        # Override this in your cluster kustomization
+        image: harbor.golder.lan/library/lvm-metrics-exporter:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: CLUSTER_NAME
+          value: "kubernetes"  # Override in cluster kustomization
+        - name: PROMETHEUS_PUSH_GATEWAY
+          value: "http://prometheus-pushgateway.monitoring.svc.cluster.local:9091"
+        - name: LOG_LEVEL
+          value: "INFO"
+        # Run every 5 minutes
+        - name: RUN_INTERVAL_SECONDS
+          value: "300"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - python3
+            - -c
+            - "import sys; sys.exit(0)"
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        readinessProbe:
+          exec:
+            command:
+            - python3
+            - -c
+            - "import kubernetes; kubernetes.config.load_incluster_config()"
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        envFrom:
+        - secretRef:
+            name: push-gateway-auth
+            optional: true
