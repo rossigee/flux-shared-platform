@@ -1,0 +1,188 @@
+# Default Deny Network Policy Template
+# This template creates a default-deny network policy that blocks all ingress and egress traffic
+# Use this as a starting point and create specific allow policies for required communication
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Default deny network policy - blocks all traffic unless explicitly allowed"
+    security.acme.com/policy-type: "baseline-security"
+spec:
+  # Apply to all pods in the namespace
+  podSelector: {}
+  
+  # Block both ingress and egress traffic
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+# Example: Allow DNS resolution (commonly needed)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Allow DNS resolution for all pods"
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS (port 53) to kube-system namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow DNS to system DNS servers (adjust IPs as needed)
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Example: Allow ingress from ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-controller
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Allow traffic from ingress controller"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: web  # Adjust selector as needed
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from ingress-nginx namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080  # Adjust port as needed
+
+---
+# Example: Allow communication within namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Allow communication between pods in same namespace"
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+
+---
+# Example: Allow monitoring scraping
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scraping
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Allow Prometheus to scrape metrics"
+spec:
+  podSelector:
+    matchLabels:
+      monitoring: "enabled"  # Adjust selector as needed
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 8080  # Metrics port
+    - protocol: TCP
+      port: 9090  # Alternative metrics port
+
+---
+# Template for database access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-database-access
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Allow access to database services"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: database  # Database pods
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from application pods in same namespace
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: backend
+    ports:
+    - protocol: TCP
+      port: 5432  # PostgreSQL
+    - protocol: TCP
+      port: 3306  # MySQL
+    - protocol: TCP
+      port: 6379  # Redis
+
+---
+# Template for external service access
+apiVersion: networking.k8s.io/v1  
+kind: NetworkPolicy
+metadata:
+  name: allow-external-services
+  namespace: NAMESPACE_NAME  # Replace with target namespace
+  annotations:
+    kubernetes.io/description: "Allow egress to external services"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: backend  # Adjust selector
+  policyTypes:
+  - Egress
+  egress:
+  # Allow HTTPS to external services
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow HTTP (if needed - consider restricting)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80
+  # Allow specific external service by IP (example)
+  - to:
+    - ipBlock:
+        cidr: 203.0.113.0/24  # Replace with actual service CIDR
+    ports:
+    - protocol: TCP
+      port: 8080

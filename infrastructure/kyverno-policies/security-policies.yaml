@@ -387,3 +387,271 @@ spec:
                 containers:
                 - readinessProbe:
                     "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-external-secrets-management
+  annotations:
+    policies.kyverno.io/title: "Require External Secrets Management"
+    policies.kyverno.io/category: "Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Prevents creation of manual secrets and ensures all secrets are managed
+      by External Secrets Operator or other approved secret management systems.
+      This prevents hardcoded secrets and promotes proper secret lifecycle management.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-managed-secrets
+      match:
+        any:
+        - resources:
+            kinds:
+            - Secret
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        any:
+        # Allow system secrets
+        - resources:
+            namespaces:
+            - kube-system
+            - kube-public
+            - kube-node-lease
+        # Allow service account tokens
+        - resources:
+            kinds:
+            - Secret
+            names:
+            - "*-token-*"
+        # Allow TLS secrets managed by cert-manager
+        - resources:
+            kinds:
+            - Secret
+        conditions:
+        - key: "{{ request.object.metadata.annotations.'cert-manager.io/issuer-name' || '' }}"
+          operator: NotEquals
+          value: ""
+        # Allow Helm secrets
+        - resources:
+            kinds:
+            - Secret
+        conditions:
+        - key: "{{ request.object.metadata.labels.'owner' || '' }}"
+          operator: Equals
+          value: "helm"
+      validate:
+        message: "Manual secrets are not allowed. Use External Secrets Operator or other approved secret management."
+        deny:
+          conditions:
+            all:
+            # Deny if not managed by external-secrets
+            - key: "{{ request.object.metadata.annotations.'external-secrets.io/managed-by' || '' }}"
+              operator: Equals
+              value: ""
+            # And not managed by sealed-secrets
+            - key: "{{ request.object.metadata.annotations.'sealedsecrets.bitnami.com/managed' || '' }}"
+              operator: Equals
+              value: ""
+            # And not a bootstrap secret (allowed pattern)
+            - key: "{{ request.object.metadata.name }}"
+              operator: NotIn
+              value: ["bootstrap-*", "*-bootstrap", "flux-system"]
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enhance-pod-security-standards
+  annotations:
+    policies.kyverno.io/title: "Enhanced Pod Security Standards"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Enforces enhanced pod security standards including seccomp profiles,
+      capability restrictions, and filesystem controls to meet CIS Kubernetes
+      Benchmark and NSA Kubernetes Hardening Guide requirements.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    # Require seccomp profile
+    - name: require-seccomp-profile
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            - StatefulSet
+            - Job
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - cilium
+      validate:
+        message: "Seccomp profile is required (RuntimeDefault or Localhost)"
+        pattern:
+          spec:
+            =(securityContext):
+              seccompProfile:
+                type: "RuntimeDefault | Localhost"
+            containers:
+            - =(securityContext):
+                =(seccompProfile):
+                  type: "RuntimeDefault | Localhost"
+
+    # Restrict capabilities
+    - name: restrict-capabilities
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - DaemonSet
+            - StatefulSet
+            - Job
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - cilium
+          - longhorn-system
+      validate:
+        message: "Containers must drop ALL capabilities and only add specific required ones"
+        pattern:
+          spec:
+            containers:
+            - =(securityContext):
+                =(capabilities):
+                  drop:
+                  - "ALL"
+                  =(add): 
+                  - "NET_BIND_SERVICE | CHOWN | DAC_OVERRIDE | FOWNER | SETGID | SETUID | SYS_CHROOT"
+
+    # Require read-only root filesystem
+    - name: require-read-only-root-filesystem
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - Job
+            operations:
+            - CREATE
+            - UPDATE
+      exclude:
+        resources:
+          namespaces:
+          - kube-system
+          - flux-system
+      validate:
+        message: "Containers should use read-only root filesystem (audit mode)"
+        validationFailureAction: Audit
+        pattern:
+          spec:
+            containers:
+            - =(securityContext):
+                =(readOnlyRootFilesystem): true
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-trusted-registries
+  annotations:
+    policies.kyverno.io/title: "Require Trusted Container Registries"
+    policies.kyverno.io/category: "Supply Chain Security"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/description: >-
+      Restricts container images to approved registries to prevent supply chain
+      attacks and ensure images come from trusted sources. Supports internal
+      registry, major cloud providers, and approved public registries.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: validate-trusted-registries
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Job
+            - CronJob
+            operations:
+            - CREATE
+            - UPDATE
+      validate:
+        message: "Images must come from organization-approved registries and repositories"
+        pattern:
+          spec:
+            containers:
+            # Internal/Corporate registries (most trusted)
+            - image: "registry.acme.com/* | harbor.acme.com/*"
+            # OR specific approved repositories from public registries
+            - image: "ghcr.io/acme-corp/* | ghcr.io/fluxcd/* | ghcr.io/argoproj/* | ghcr.io/grafana/* | ghcr.io/prometheus/*"
+            # OR specific Kubernetes/CNCF projects
+            - image: "registry.k8s.io/* | k8s.gcr.io/*"
+            # OR specific approved base images only
+            - image: "docker.io/library/alpine:* | docker.io/library/ubuntu:* | docker.io/library/nginx:* | docker.io/library/postgres:*"
+            # OR specific cloud provider managed images
+            - image: "gcr.io/distroless/* | public.ecr.aws/lambda/*"
+            # OR Red Hat certified images
+            - image: "registry.redhat.io/ubi8/* | registry.redhat.io/ubi9/*"
+            =(initContainers):
+            # Same restrictions for init containers
+            - image: "registry.acme.com/* | harbor.acme.com/*"
+            - image: "ghcr.io/acme-corp/* | ghcr.io/fluxcd/* | ghcr.io/argoproj/* | ghcr.io/grafana/* | ghcr.io/prometheus/*"
+            - image: "registry.k8s.io/* | k8s.gcr.io/*"
+            - image: "docker.io/library/alpine:* | docker.io/library/ubuntu:* | docker.io/library/nginx:* | docker.io/library/postgres:*"
+            - image: "gcr.io/distroless/* | public.ecr.aws/lambda/*"
+            - image: "registry.redhat.io/ubi8/* | registry.redhat.io/ubi9/*"
+    
+    # Additional rule to block known problematic registries
+    - name: block-untrusted-registries
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Job
+            - CronJob
+            operations:
+            - CREATE
+            - UPDATE
+      validate:
+        message: "Images from untrusted or anonymous registries are not allowed"
+        deny:
+          conditions:
+            any:
+            # Block Docker Hub user repositories (only allow library/)
+            - key: "{{ request.object.spec.containers[?starts_with(@.image, 'docker.io/') && !starts_with(@.image, 'docker.io/library/')] | length(@) }}"
+              operator: GreaterThan
+              value: 0
+            # Block Quay.io user repositories (require organization approval)
+            - key: "{{ request.object.spec.containers[?starts_with(@.image, 'quay.io/') && !starts_with(@.image, 'quay.io/acme-corp/')] | length(@) }}"
+              operator: GreaterThan
+              value: 0
+            # Block localhost/development registries in production
+            - key: "{{ request.object.spec.containers[?starts_with(@.image, 'localhost/') || starts_with(@.image, '127.0.0.1') || starts_with(@.image, '192.168.')] | length(@) }}"
+              operator: GreaterThan
+              value: 0

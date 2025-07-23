@@ -1,0 +1,301 @@
+# Security Monitoring Alerts Template
+# This template provides comprehensive security alerting for Kubernetes infrastructure
+# Replace CLUSTER_NAME and NOTIFICATION_CHANNEL with appropriate values
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: security-monitoring-alerts
+  namespace: monitoring  # Adjust namespace as needed
+  labels:
+    app.kubernetes.io/name: security-alerts
+    app.kubernetes.io/component: monitoring
+  annotations:
+    kubernetes.io/description: "Security monitoring alerts for Kubernetes infrastructure"
+spec:
+  groups:
+  # Kyverno Policy Violations
+  - name: kyverno-security-alerts
+    interval: 30s
+    rules:
+    - alert: KyvernoPolicyViolationHigh
+      expr: increase(kyverno_policy_results_total{policy_validation_mode="enforce",policy_result="fail",policy_severity="high"}[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+        component: kyverno
+      annotations:
+        summary: "High severity Kyverno policy violation detected"
+        description: "Policy {{ $labels.policy_name }} failed for resource {{ $labels.resource_kind }}/{{ $labels.resource_name }} in namespace {{ $labels.resource_namespace }}"
+        runbook_url: "https://docs.acme.com/runbooks/security/kyverno-violations"
+
+    - alert: KyvernoPolicyViolationMedium
+      expr: increase(kyverno_policy_results_total{policy_validation_mode="enforce",policy_result="fail",policy_severity="medium"}[15m]) > 5
+      for: 2m
+      labels:
+        severity: warning
+        category: security
+        component: kyverno
+      annotations:
+        summary: "Multiple medium severity Kyverno policy violations"
+        description: "{{ $value }} policy violations in the last 15 minutes for policy {{ $labels.policy_name }}"
+
+    - alert: KyvernoSecretPolicyViolation
+      expr: increase(kyverno_policy_results_total{policy_name="require-external-secrets-management",policy_result="fail"}[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+        component: secrets
+      annotations:
+        summary: "Manual secret creation detected"
+        description: "Attempt to create manual secret {{ $labels.resource_name }} in namespace {{ $labels.resource_namespace }} - should use External Secrets"
+
+    - alert: KyvernoUntrustedRegistryViolation
+      expr: increase(kyverno_policy_results_total{policy_name="require-trusted-registries",policy_result="fail"}[5m]) > 0
+      for: 0m
+      labels:
+        severity: high
+        category: security
+        component: supply-chain
+      annotations:
+        summary: "Untrusted container registry usage detected"
+        description: "Container image from untrusted registry attempted in {{ $labels.resource_namespace }}/{{ $labels.resource_name }}"
+
+  # API Server Security
+  - name: apiserver-security-alerts
+    interval: 30s
+    rules:
+    - alert: UnauthorizedAPIAccess
+      expr: rate(apiserver_audit_total{objectRef_apiVersion!="v1",verb!~"get|list|watch",code!~"2.."}[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: warning
+        category: security
+        component: apiserver
+      annotations:
+        summary: "Unauthorized API access detected"
+        description: "{{ $value }} unauthorized API requests per second from {{ $labels.user }} to {{ $labels.objectRef_resource }}"
+
+    - alert: PrivilegedPodCreation
+      expr: increase(apiserver_audit_total{verb="create",objectRef_resource="pods",objectRef_subresource="",responseStatus_code=~"2.."}[5m]) and on() kube_pod_info{created_by_kind!="DaemonSet"} and on() kube_pod_container_info{container_id!="",security_context_privileged="true"}
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+        component: pods
+      annotations:
+        summary: "Privileged pod creation detected"
+        description: "Privileged pod {{ $labels.pod }} created in namespace {{ $labels.namespace }}"
+
+    - alert: ServiceAccountTokenMounting
+      expr: increase(apiserver_audit_total{verb="create",objectRef_resource="pods",requestObject_spec_automountServiceAccountToken="true"}[10m]) > 10
+      for: 1m
+      labels:
+        severity: warning
+        category: security
+        component: rbac
+      annotations:
+        summary: "High rate of service account token mounting"
+        description: "{{ $value }} pods created with service account token mounting in the last 10 minutes"
+
+  # Certificate and TLS Security
+  - name: certificate-security-alerts
+    interval: 1m
+    rules:
+    - alert: CertificateExpiringSoon
+      expr: (cert_manager_certificate_expiration_timestamp_seconds - time()) / 86400 < 30
+      for: 0m
+      labels:
+        severity: warning
+        category: security
+        component: certificates
+      annotations:
+        summary: "Certificate expiring soon"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} expires in {{ $value }} days"
+
+    - alert: CertificateExpired
+      expr: cert_manager_certificate_expiration_timestamp_seconds - time() <= 0
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+        component: certificates
+      annotations:
+        summary: "Certificate has expired"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} has expired"
+
+    - alert: CertManagerNotReady
+      expr: cert_manager_certificate_ready_status != 1
+      for: 5m
+      labels:
+        severity: warning
+        category: security
+        component: certificates
+      annotations:
+        summary: "Certificate not ready"
+        description: "Certificate {{ $labels.name }} in namespace {{ $labels.namespace }} is not in ready state"
+
+  # External Secrets Security
+  - name: external-secrets-security-alerts
+    interval: 30s
+    rules:
+    - alert: ExternalSecretSyncFailure
+      expr: external_secrets_sync_calls_error > 0
+      for: 2m
+      labels:
+        severity: warning
+        category: security
+        component: external-secrets
+      annotations:
+        summary: "External Secret sync failure"
+        description: "External Secret {{ $labels.name }} in namespace {{ $labels.namespace }} failed to sync: {{ $labels.error }}"
+
+    - alert: ExternalSecretProviderError
+      expr: increase(external_secrets_provider_api_calls_error[5m]) > 3
+      for: 1m
+      labels:
+        severity: critical
+        category: security
+        component: external-secrets
+      annotations:
+        summary: "External Secrets provider API error"
+        description: "External Secrets provider {{ $labels.provider }} experiencing API errors: {{ $value }} errors in 5 minutes"
+
+  # Network Security
+  - name: network-security-alerts
+    interval: 30s
+    rules:
+    - alert: NetworkPolicyDeniedConnections
+      expr: increase(cilium_drop_count_total{reason="Policy denied"}[5m]) > 10
+      for: 1m
+      labels:
+        severity: info
+        category: security
+        component: networking
+      annotations:
+        summary: "Network policy denied connections"
+        description: "{{ $value }} connections denied by network policy in the last 5 minutes"
+
+    - alert: UnexpectedNetworkTraffic
+      expr: rate(cilium_drop_count_total[5m]) > 1
+      for: 5m
+      labels:
+        severity: warning
+        category: security
+        component: networking
+      annotations:
+        summary: "High rate of dropped network packets"
+        description: "{{ $value }} packets/second being dropped, investigate for potential security issues"
+
+  # Container and Pod Security
+  - name: container-security-alerts
+    interval: 30s
+    rules:
+    - alert: PodSecurityViolation
+      expr: increase(pod_security_violations_total[5m]) > 0
+      for: 0m
+      labels:
+        severity: high
+        category: security
+        component: pods
+      annotations:
+        summary: "Pod Security Standard violation"
+        description: "Pod Security violation detected: {{ $labels.violation_type }} in namespace {{ $labels.namespace }}"
+
+    - alert: HighPrivilegedContainers
+      expr: kube_pod_container_info{security_context_privileged="true"} > 0
+      for: 5m
+      labels:
+        severity: warning
+        category: security
+        component: containers
+      annotations:
+        summary: "Privileged containers running"
+        description: "Privileged container {{ $labels.container }} in pod {{ $labels.pod }}/{{ $labels.namespace }}"
+
+    - alert: ContainerRootFileSystemWritable
+      expr: kube_pod_container_info{security_context_readonlyfilesystem="false"} and on(pod,namespace) kube_pod_labels{label_security_scan!="excluded"}
+      for: 2m
+      labels:
+        severity: info
+        category: security
+        component: containers
+      annotations:
+        summary: "Container with writable root filesystem"
+        description: "Container {{ $labels.container }} in pod {{ $labels.pod }}/{{ $labels.namespace }} has writable root filesystem"
+
+  # Flux Security
+  - name: flux-security-alerts
+    interval: 30s
+    rules:
+    - alert: FluxSuspendedResource
+      expr: gotk_suspend_status == 1
+      for: 10m
+      labels:
+        severity: warning
+        category: security
+        component: flux
+      annotations:
+        summary: "Flux resource has been suspended"
+        description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} has been suspended for over 10 minutes"
+
+    - alert: FluxReconciliationFailure
+      expr: gotk_reconcile_condition{type="Ready",status="False"} == 1
+      for: 5m
+      labels:
+        severity: warning
+        category: security
+        component: flux
+      annotations:
+        summary: "Flux reconciliation failure"
+        description: "{{ $labels.kind }}/{{ $labels.name }} in namespace {{ $labels.namespace }} reconciliation failing: {{ $labels.reason }}"
+
+    - alert: FluxImageUpdateFailure
+      expr: increase(controller_runtime_reconcile_errors_total{controller="imagerepository"}[10m]) > 0
+      for: 0m
+      labels:
+        severity: warning
+        category: security
+        component: flux-image-automation
+      annotations:
+        summary: "Flux image update controller error"
+        description: "Image repository controller experiencing errors - potential supply chain impact"
+
+  # RBAC and Access Control
+  - name: rbac-security-alerts
+    interval: 30s
+    rules:
+    - alert: ServiceAccountCreated
+      expr: increase(kube_service_account_created{namespace!~"kube-.*|flux-system"}[5m]) > 0
+      for: 0m
+      labels:
+        severity: info
+        category: security
+        component: rbac
+      annotations:
+        summary: "New service account created"
+        description: "Service account {{ $labels.service_account }} created in namespace {{ $labels.namespace }}"
+
+    - alert: ClusterRoleBindingCreated
+      expr: increase(kube_clusterrolebinding_created[5m]) > 0
+      for: 0m
+      labels:
+        severity: warning
+        category: security
+        component: rbac
+      annotations:
+        summary: "New cluster role binding created"
+        description: "Cluster role binding {{ $labels.clusterrolebinding }} created"
+
+    - alert: AdminAccessGranted
+      expr: kube_clusterrolebinding_info{clusterrole="cluster-admin"} and on(clusterrolebinding) changes(kube_clusterrolebinding_created[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        category: security
+        component: rbac
+      annotations:
+        summary: "Cluster admin access granted"
+        description: "Cluster admin access granted via binding {{ $labels.clusterrolebinding }}"
