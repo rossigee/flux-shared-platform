@@ -4,7 +4,7 @@
 # Without this, kustomize-controller cannot reach source-controller when on different nodes
 # Symptoms: "dial tcp IP:80: connect: operation not permitted" errors
 # Root cause: Cilium default deny blocks cross-node pod communication
-# See: /home/rossg/clients/golder/hugo/infra/docs/content/incidents/2025-07-13-flux-cross-node-connectivity.md
+# See: incident documentation for flux cross-node connectivity (INC-2025-07-13-001)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
