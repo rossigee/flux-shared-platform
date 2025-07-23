@@ -1,0 +1,48 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-cilium-policies
+  labels:
+    app.kubernetes.io/name: kyverno
+  annotations:
+    kubernetes.io/description: "Allow Kyverno to manage Cilium network policies"
+rules:
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - patch
+  - delete
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno-cilium-policies
+  labels:
+    app.kubernetes.io/name: kyverno
+  annotations:
+    kubernetes.io/description: "Bind Kyverno service accounts to Cilium policy management role"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno-cilium-policies
+subjects:
+- kind: ServiceAccount
+  name: kyverno-admission-controller
+  namespace: kyverno
+- kind: ServiceAccount
+  name: kyverno-background-controller
+  namespace: kyverno
+- kind: ServiceAccount
+  name: kyverno-cleanup-controller
+  namespace: kyverno
+- kind: ServiceAccount
+  name: kyverno-reports-controller
+  namespace: kyverno
