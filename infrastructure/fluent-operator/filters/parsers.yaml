@@ -1,0 +1,12 @@
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterParser
+metadata:
+  name: containerd-cleaner
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+spec:
+  regex:
+    timeKey: time
+    regex: '/(?<time>.+) (?<stream>\w{6}) (?<flag>\w{1}) (?<log>.*)/'

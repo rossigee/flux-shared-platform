@@ -15,3 +15,96 @@ spec:
         kind: HelmRepository
         name: argoproj
         namespace: flux-system
+  values:
+    global:
+      domain: ARGOCD_DOMAIN
+    configs:
+      params:
+        server.insecure: true
+        server.grpc.web: true
+      cm:
+        url: https://ARGOCD_DOMAIN
+        application.instanceLabelKey: argocd.argoproj.io/instance
+        server.rbac.log.enforce.enable: "true"
+        exec.enabled: "false"
+        admin.enabled: "true"
+        timeout.reconciliation: 180s
+        timeout.hard.reconciliation: 0s
+    controller:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 250m
+          memory: 1Gi
+        limits:
+          cpu: 500m
+          memory: 2Gi
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    dex:
+      enabled: false
+    server:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+      ingress:
+        enabled: true
+        ingressClassName: cilium
+        annotations:
+          cert-manager.io/cluster-issuer: vault-issuer
+        hosts:
+          - ARGOCD_DOMAIN
+        tls:
+          - secretName: argocd-server-tls
+            hosts:
+              - ARGOCD_DOMAIN
+    repoServer:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    applicationSet:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    notifications:
+      enabled: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true

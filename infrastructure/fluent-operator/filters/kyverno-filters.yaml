@@ -1,0 +1,405 @@
+---
+# Kyverno Policy Violation Detection Filters for FluentBit
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: detect-kyverno-policy-violations
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: security
+  annotations:
+    description: "Detect and parse Kyverno policy violations for event routing"
+spec:
+  match: kube.*
+  filters:
+    # First, identify Kyverno log messages and clean ANSI colors
+    - lua:
+        script:
+          name: kyverno-policy-parser
+          key: kyverno_policy.lua
+        call: clean_ansi_and_identify_kyverno
+        timeAsTable: true
+    # Parse Kyverno violations and generate structured events
+    - lua:
+        script:
+          name: kyverno-policy-parser
+          key: kyverno_policy.lua
+        call: parse_kyverno_violations
+        timeAsTable: true
+    # Extract detailed information about violations
+    - lua:
+        script:
+          name: kyverno-policy-parser
+          key: kyverno_policy.lua
+        call: extract_violation_details
+        timeAsTable: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: detect-kyverno-reports
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: security
+  annotations:
+    description: "Detect Kyverno policy reports and admission failures"
+spec:
+  match: kube.*
+  filters:
+    # Parse Kyverno admission webhook responses
+    - lua:
+        script:
+          name: kyverno-policy-parser
+          key: kyverno_policy.lua
+        call: parse_admission_failures
+        timeAsTable: true
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kyverno-policy-parser
+data:
+  kyverno_policy.lua: |
+    -- Helper function to remove ANSI color codes
+    function remove_ansi_colors(text)
+        if not text then
+            return text
+        end
+        -- Remove ANSI escape sequences
+        text = string.gsub(text, "\027%[[0-9;]*m", "")
+        return text
+    end
+
+    -- Extract key-value pairs from Kyverno log format
+    function extract_kyverno_fields(log)
+        local fields = {}
+
+        -- Extract logger field
+        local logger = string.match(log, "logger=([^%s]+)")
+        if logger then
+            fields.logger = logger
+        end
+
+        -- Extract error field
+        local error_msg = string.match(log, "error=\"([^\"]+)\"")
+        if error_msg then
+            fields.error = error_msg
+        end
+
+        -- Extract object name
+        local obj = string.match(log, "obj=([^%s]+)")
+        if obj then
+            fields.object = obj
+        end
+
+        -- Extract namespace
+        local namespace = string.match(log, "namespace=([^%s]+)")
+        if namespace then
+            fields.namespace = namespace
+        end
+
+        -- Extract policy name
+        local policy = string.match(log, "policy=([^%s]+)")
+        if policy then
+            fields.policy = policy
+        end
+
+        -- Extract rule name
+        local rule = string.match(log, "rule=([^%s]+)")
+        if rule then
+            fields.rule = rule
+        end
+
+        -- Extract resource kind
+        local kind = string.match(log, "kind=([^%s]+)")
+        if kind then
+            fields.kind = kind
+        end
+
+        -- Extract resource name
+        local name = string.match(log, "name=([^%s]+)")
+        if name then
+            fields.name = name
+        end
+
+        -- Extract uid
+        local uid = string.match(log, "uid=([^%s]+)")
+        if uid then
+            fields.uid = uid
+        end
+
+        return fields
+    end
+
+    function clean_ansi_and_identify_kyverno(tag, timestamp, record)
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Check if this is a Kyverno namespace log
+        local is_kyverno = false
+        if record["kubernetes"] and record["kubernetes"]["namespace_name"] then
+            local namespace = record["kubernetes"]["namespace_name"]
+            if namespace == "kyverno" or string.match(namespace, "kyverno") then
+                is_kyverno = true
+            end
+        end
+
+        -- Also check for Kyverno container
+        if record["kubernetes"] and record["kubernetes"]["container_name"] then
+            local container = record["kubernetes"]["container_name"]
+            if string.match(container, "kyverno") then
+                is_kyverno = true
+            end
+        end
+
+        if is_kyverno then
+            -- Clean ANSI colors from log
+            local clean_log = remove_ansi_colors(log)
+            record["log"] = clean_log
+            record["log_original"] = log
+            record["kyverno_source"] = true
+
+            return 1, timestamp, record
+        end
+
+        return 0, timestamp, record
+    end
+
+    function parse_kyverno_violations(tag, timestamp, record)
+        if not record["kyverno_source"] then
+            return 0, timestamp, record
+        end
+
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Detect different types of Kyverno violations
+        local violation_patterns = {
+            {
+                pattern = "admission webhook.*denied",
+                severity = "HIGH",
+                event_type = "admission_denied",
+                description = "Admission webhook denied the request"
+            },
+            {
+                pattern = "policy violation",
+                severity = "HIGH",
+                event_type = "policy_violation",
+                description = "Policy violation detected"
+            },
+            {
+                pattern = "validation failure",
+                severity = "MEDIUM",
+                event_type = "validation_failure",
+                description = "Validation rule failed"
+            },
+            {
+                pattern = "mutation failure",
+                severity = "MEDIUM",
+                event_type = "mutation_failure",
+                description = "Mutation rule failed"
+            },
+            {
+                pattern = "generate failure",
+                severity = "MEDIUM",
+                event_type = "generate_failure",
+                description = "Generate rule failed"
+            },
+            {
+                pattern = "background scan.*failed",
+                severity = "LOW",
+                event_type = "background_scan_failure",
+                description = "Background scan failed"
+            },
+            {
+                pattern = "(?i)blocked.*policy",
+                severity = "HIGH",
+                event_type = "policy_blocked",
+                description = "Request blocked by policy"
+            }
+        }
+
+        -- Check for policy violations
+        for _, violation in ipairs(violation_patterns) do
+            if string.match(string.lower(log), violation.pattern) then
+                -- Extract Kyverno-specific fields
+                local kyverno_fields = extract_kyverno_fields(log)
+
+                record["kyverno_event_type"] = violation.event_type
+                record["kyverno_severity"] = violation.severity
+                record["kyverno_description"] = violation.description
+
+                -- Add extracted fields
+                for key, value in pairs(kyverno_fields) do
+                    record["kyverno_" .. key] = value
+                end
+
+                -- Add Kubernetes context
+                if record["kubernetes"] then
+                    record["kyverno_target_namespace"] = record["kubernetes"]["namespace_name"]
+                    record["kyverno_pod_name"] = record["kubernetes"]["pod_name"]
+                    record["kyverno_container"] = record["kubernetes"]["container_name"]
+                end
+
+                return 1, timestamp, record
+            end
+        end
+
+        return 0, timestamp, record
+    end
+
+    function extract_violation_details(tag, timestamp, record)
+        if not record["kyverno_event_type"] then
+            return 0, timestamp, record
+        end
+
+        local log = record["log"]
+        if not log then
+            return 1, timestamp, record
+        end
+
+        -- Extract additional context based on event type
+        if record["kyverno_event_type"] == "admission_denied" then
+            -- Look for admission request details
+            local admission_info = string.match(log, "AdmissionRequest.*uid=([^,]+)")
+            if admission_info then
+                record["kyverno_admission_uid"] = admission_info
+            end
+        end
+
+        -- Extract verb (CREATE, UPDATE, DELETE, etc.)
+        local verb = string.match(log, "verb=([^%s]+)")
+        if verb then
+            record["kyverno_verb"] = verb
+        end
+
+        -- Extract API version
+        local api_version = string.match(log, "apiVersion=([^%s]+)")
+        if api_version then
+            record["kyverno_api_version"] = api_version
+        end
+
+        -- Extract user information
+        local user = string.match(log, "user=([^%s]+)")
+        if user then
+            record["kyverno_user"] = user
+        end
+
+        -- Create structured event for routing to event bus
+        if record["kyverno_severity"] == "HIGH" then
+            local event_record = {
+                event_type = "KYVERNO_POLICY_VIOLATION",
+                severity = record["kyverno_severity"],
+                violation_type = record["kyverno_event_type"],
+                policy = record["kyverno_policy"] or "unknown",
+                rule = record["kyverno_rule"] or "unknown",
+                resource_kind = record["kyverno_kind"] or "unknown",
+                resource_name = record["kyverno_name"] or "unknown",
+                resource_namespace = record["kyverno_namespace"] or record["kyverno_target_namespace"] or "unknown",
+                cluster = record["cluster"] or "unknown",
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ", timestamp["sec"]),
+                description = record["kyverno_description"],
+                error_details = record["kyverno_error"],
+                user = record["kyverno_user"],
+                verb = record["kyverno_verb"],
+                log_source = {
+                    pod = record["kyverno_pod_name"],
+                    container = record["kyverno_container"],
+                    logger = record["kyverno_logger"]
+                },
+                raw_log = log
+            }
+
+            -- Tag for routing to event bus
+            local event_tag = "events.kyverno_violation"
+            return 2, timestamp, {event_record, record}
+        end
+
+        return 1, timestamp, record
+    end
+
+    function parse_admission_failures(tag, timestamp, record)
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Look for admission controller webhook failures across all services
+        local admission_patterns = {
+            "admission webhook.*failed",
+            "admission controller.*denied",
+            "webhook admission.*failed",
+            "validating webhook.*failed",
+            "mutating webhook.*failed"
+        }
+
+        for _, pattern in ipairs(admission_patterns) do
+            if string.match(string.lower(log), pattern) then
+                record["admission_failure"] = true
+                record["admission_pattern"] = pattern
+
+                -- Extract webhook name if present
+                local webhook_name = string.match(log, "webhook[%s]*[\"']?([^\"'%s]+)")
+                if webhook_name then
+                    record["webhook_name"] = webhook_name
+                end
+
+                return 1, timestamp, record
+            end
+        end
+
+        return 0, timestamp, record
+    end
+
+---
+# Output routing for Kyverno events to event bus
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterOutput
+metadata:
+  name: kyverno-events-webhook
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: security
+spec:
+  match: events.kyverno_violation
+  http:
+    host: "event-bus.golder.lan"  # Replace with your event bus endpoint
+    port: 9200
+    uri: "/kyverno-violations"
+    format: json
+    headers:
+      - "Content-Type: application/json"
+      - "Authorization: Bearer ${EVENTBUS_TOKEN}"  # Inject from External Secret
+    tls:
+      verify: false
+
+---
+# Alternative: Route to Discord webhook for immediate alerting
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterOutput
+metadata:
+  name: kyverno-discord-alerts
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: security
+spec:
+  match: events.kyverno_violation
+  http:
+    host: "discord.com"
+    port: 443
+    uri: "/api/webhooks/${DISCORD_WEBHOOK_ID}/${DISCORD_WEBHOOK_TOKEN}"  # Inject from External Secret
+    format: json
+    tls:
+      verify: true
+    headers:
+      - "Content-Type: application/json"
+    body_key: "content"
+    # Transform the event into Discord message format
+    json_date_key: false
+    json_date_format: iso8601

@@ -1,0 +1,37 @@
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: tail
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+spec:
+  tail:
+    db: /fluent-bit/tail/pos.db
+    dbSync: Normal
+    memBufLimit: 100MB
+    parser: docker
+    path: /var/log/containers/*.log
+    readFromHead: false
+    refreshIntervalSeconds: 10
+    skipLongLines: true
+    storageType: memory
+    tag: kube.*
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterInput
+metadata:
+  name: node-metrics
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+spec:
+  nodeExporterMetrics:
+    tag: node_metrics
+    # Global scrape interval (default for all collectors)
+    scrapeInterval: "15s"
+    path:
+      procfs: /host/proc
+      sysfs: /host/sys

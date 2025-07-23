@@ -1,0 +1,296 @@
+---
+# Security Event Detection Filters for FluentBit
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: detect-ssh-brute-force
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: security
+  annotations:
+    description: "Detect SSH brute force attempts and generate security events"
+spec:
+  match: kube.*
+  filters:
+    # Extract SSH failure information
+    - lua:
+        script:
+          name: ssh-security-parser
+          key: ssh_security.lua
+        call: parse_ssh_failures
+        timeAsTable: true
+    # Generate security events for multiple failures
+    - lua:
+        script:
+          name: ssh-security-parser
+          key: ssh_security.lua
+        call: generate_ssh_events
+        timeAsTable: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: detect-authentication-failures
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: security
+  annotations:
+    description: "Detect authentication failures across services"
+spec:
+  match: kube.*
+  filters:
+    - lua:
+        script:
+          name: auth-security-parser
+          key: auth_security.lua
+        call: parse_auth_failures
+        timeAsTable: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: detect-database-issues
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: database
+  annotations:
+    description: "Detect database performance and error issues"
+spec:
+  match: kube.*
+  filters:
+    - lua:
+        script:
+          name: database-monitor-parser
+          key: database_monitor.lua
+        call: parse_database_events
+        timeAsTable: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: detect-service-errors
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: application
+  annotations:
+    description: "Detect application errors and failures"
+spec:
+  match: kube.*
+  filters:
+    - lua:
+        script:
+          name: service-error-parser
+          key: service_error.lua
+        call: parse_service_errors
+        timeAsTable: true
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssh-security-parser
+data:
+  ssh_security.lua: |
+    local ssh_failure_cache = {}
+    local cache_ttl = 300 -- 5 minutes
+    local failure_threshold = 5 -- failures per window
+
+    function parse_ssh_failures(tag, timestamp, record)
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Match SSH connection failures
+        local ip = string.match(log, "Failed connection from ([0-9%.]+):")
+        local auth_fail = string.match(log, "Failed authentication attempt from ([0-9%.]+):")
+
+        if ip or auth_fail then
+            local source_ip = ip or auth_fail
+            local current_time = timestamp["sec"]
+
+            -- Initialize or update failure count for IP
+            if not ssh_failure_cache[source_ip] then
+                ssh_failure_cache[source_ip] = {count = 0, first_seen = current_time, last_seen = current_time}
+            end
+
+            local cache_entry = ssh_failure_cache[source_ip]
+
+            -- Reset count if outside TTL window
+            if current_time - cache_entry.first_seen > cache_ttl then
+                cache_entry.count = 0
+                cache_entry.first_seen = current_time
+            end
+
+            cache_entry.count = cache_entry.count + 1
+            cache_entry.last_seen = current_time
+
+            -- Add security context to record
+            record["security_event_type"] = "ssh_failure"
+            record["source_ip"] = source_ip
+            record["failure_count"] = cache_entry.count
+            record["service"] = record["kubernetes"]["namespace_name"]
+
+            return 1, timestamp, record
+        end
+
+        return 0, timestamp, record
+    end
+
+    function generate_ssh_events(tag, timestamp, record)
+        if record["security_event_type"] == "ssh_failure" and record["failure_count"] then
+            if record["failure_count"] >= failure_threshold then
+                -- Create security alert record
+                local alert_record = {
+                    alert_type = "SSH_BRUTE_FORCE_DETECTED",
+                    severity = "HIGH",
+                    source_ip = record["source_ip"],
+                    service = record["service"],
+                    failure_count = record["failure_count"],
+                    pod_name = record["kubernetes"]["pod_name"],
+                    namespace = record["kubernetes"]["namespace_name"],
+                    cluster = record["kubernetes"]["labels"]["cluster"] or "unknown",
+                    event_time = os.date("!%Y-%m-%dT%H:%M:%SZ", timestamp["sec"]),
+                    log_details = record["log"]
+                }
+
+                -- Tag for routing to security webhook
+                local security_tag = "security.ssh_brute_force"
+                return 2, timestamp, {alert_record, record}
+            end
+        end
+
+        return 1, timestamp, record
+    end
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-security-parser
+data:
+  auth_security.lua: |
+    function parse_auth_failures(tag, timestamp, record)
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Match authentication failures across services
+        local patterns = {
+            "authentication.*failed",
+            "login.*failed",
+            "unauthorized",
+            "access denied",
+            "permission denied",
+            "401 Unauthorized",
+            "403 Forbidden"
+        }
+
+        for _, pattern in ipairs(patterns) do
+            if string.match(string.lower(log), pattern) then
+                record["security_event_type"] = "auth_failure"
+                record["service"] = record["kubernetes"]["namespace_name"]
+                record["container"] = record["kubernetes"]["container_name"]
+
+                -- Extract IP if present
+                local ip = string.match(log, "([0-9%.]+)")
+                if ip then
+                    record["source_ip"] = ip
+                end
+
+                return 1, timestamp, record
+            end
+        end
+
+        return 0, timestamp, record
+    end
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-monitor-parser
+data:
+  database_monitor.lua: |
+    function parse_database_events(tag, timestamp, record)
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Parse PostgreSQL logs for performance issues
+        if record["kubernetes"]["container_name"] == "postgres" then
+            -- Check for long-running queries
+            local duration = string.match(log, "duration: ([0-9%.]+) ms")
+            if duration and tonumber(duration) > 5000 then -- 5 second threshold
+                record["db_event_type"] = "slow_query"
+                record["duration_ms"] = tonumber(duration)
+                record["severity"] = "MEDIUM"
+                return 1, timestamp, record
+            end
+
+            -- Check for deadlocks
+            if string.match(log, "deadlock detected") then
+                record["db_event_type"] = "deadlock"
+                record["severity"] = "HIGH"
+                return 1, timestamp, record
+            end
+
+            -- Check for connection limits
+            if string.match(log, "too many connections") then
+                record["db_event_type"] = "connection_limit"
+                record["severity"] = "HIGH"
+                return 1, timestamp, record
+            end
+        end
+
+        return 0, timestamp, record
+    end
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-error-parser
+data:
+  service_error.lua: |
+    function parse_service_errors(tag, timestamp, record)
+        local log = record["log"]
+        if not log then
+            return 0, timestamp, record
+        end
+
+        -- Match various error patterns
+        local error_patterns = {
+            {pattern = "error", severity = "MEDIUM"},
+            {pattern = "exception", severity = "HIGH"},
+            {pattern = "panic", severity = "CRITICAL"},
+            {pattern = "fatal", severity = "CRITICAL"},
+            {pattern = "500 Internal Server Error", severity = "HIGH"},
+            {pattern = "502 Bad Gateway", severity = "MEDIUM"},
+            {pattern = "503 Service Unavailable", severity = "HIGH"},
+            {pattern = "504 Gateway Timeout", severity = "MEDIUM"},
+            {pattern = "out of memory", severity = "CRITICAL"},
+            {pattern = "disk full", severity = "CRITICAL"}
+        }
+
+        local log_lower = string.lower(log)
+
+        for _, error_info in ipairs(error_patterns) do
+            if string.match(log_lower, error_info.pattern) then
+                record["service_event_type"] = "application_error"
+                record["error_pattern"] = error_info.pattern
+                record["severity"] = error_info.severity
+                record["service"] = record["kubernetes"]["namespace_name"]
+                record["container"] = record["kubernetes"]["container_name"]
+
+                return 1, timestamp, record
+            end
+        end
+
+        return 0, timestamp, record
+    end

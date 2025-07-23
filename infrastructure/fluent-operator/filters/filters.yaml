@@ -1,0 +1,136 @@
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: containerd
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+spec:
+  match: kube.*
+  filters:
+  - lua:
+      script:
+        key: containerd.lua
+        name: fluent-bit-containerd-config
+      call: containerd
+      timeAsTable: true
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: kubernetes
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+spec:
+  match: kube.*
+  filters:
+  - kubernetes:
+      annotations: false
+      kubeCAFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      kubeTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubeURL: https://kubernetes.default.svc.cluster.local
+      labels: true
+      tlsVerify: false
+      bufferSize: 512k
+  - nest:
+      addPrefix: kubernetes_
+      nestedUnder: kubernetes
+      operation: lift
+  - modify:
+      rules:
+      - remove: stream
+      - remove: kubernetes_pod_id
+      - remove: kubernetes_host
+      - remove: kubernetes_container_hash
+  - nest:
+      nestUnder: kubernetes
+      operation: nest
+      removePrefix: kubernetes_
+      wildcard:
+      - kubernetes_*
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-containerd-config
+data:
+  containerd.lua: |
+    function containerd( tag, timestamp, record)
+           if(record["logtag"]~=nil)
+           then
+           timeStr = os.date("!*t",  timestamp["sec"])
+            t = string.format("%4d-%02d-%02dT%02d:%02d:%02d.%sZ",
+            timeStr["year"], timeStr["month"], timeStr["day"],
+            timeStr["hour"], timeStr["min"], timeStr["sec"],
+            timestamp["nsec"]);
+            record["time"] = t;
+            record["log"] = record["message"];
+            record["message"] =  nil;
+            return 1, timestamp, record
+            else
+            return 0,timestamp,record
+           end
+    end
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: discard-health-checks
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+  annotations:
+    description: "Filter out health check log entries"
+spec:
+  match: kube.*
+  filters:
+    - grep:
+        exclude: 'log /GET.*Blackbox.Exporter/'
+    - grep:
+        exclude: 'log /GET.*kube\-probe/'
+    - grep:
+        exclude: 'log /GET.\/healthz/'
+    - grep:
+        exclude: 'log /GET.\/web\/health'
+    - grep:
+        exclude: 'log /.*updown\.io daemon/'
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: discard-excess-workflow-controller-logs
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+  annotations:
+    description: "Filter out excessive log entries from Workflow Controller (https://github.com/argoproj/argo-workflows/issues/11657)"
+spec:
+  match: kube.*
+  filters:
+    - grep:
+        exclude: 'log /invalid config map object received in config watcher/'
+
+---
+apiVersion: fluentbit.fluent.io/v1alpha2
+kind: ClusterFilter
+metadata:
+  name: postprocess-containerd-logs
+  labels:
+    fluentbit.fluent.io/enabled: "true"
+    fluentbit.fluent.io/component: logging
+  annotations:
+    description: "Parse out the prefixed part of the log message"
+spec:
+  ordinal: 1
+  match: kube.*
+  filters:
+    - parser:
+        keyName: log
+        parser: containerd-cleaner
+        reserveData: true

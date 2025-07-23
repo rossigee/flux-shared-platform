@@ -1,0 +1,136 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey
+  labels:
+    app: valkey
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    name: valkey
+  selector:
+    app: valkey
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: valkey
+data:
+  valkey.conf: |
+    maxmemory 64mb
+    maxmemory-policy allkeys-lru
+    # Disable RDB persistence for Argo Workflows cache use case
+    save ""
+    stop-writes-on-bgsave-error no
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: valkey
+spec:
+  serviceName: "valkey"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: In
+                    values:
+                      - th
+      # Security context for pod (Kyverno policy compliance)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10000
+        runAsGroup: 10000
+        fsGroup: 10000
+        seccompProfile:
+          type: RuntimeDefault
+      # Image pull secrets for private registry
+      imagePullSecrets:
+        - name: harbor-credentials
+      containers:
+      - name: valkey
+        image: harbor.golder.lan/dockerhub/valkey/valkey:7.2.7-alpine
+        command:
+        - sh
+        - -c
+        - |
+          echo "requirepass $VALKEY_AUTH" >> /tmp/valkey.conf
+          cat /etc/valkey/valkey.conf >> /tmp/valkey.conf
+          valkey-server /tmp/valkey.conf
+        ports:
+        - containerPort: 6379
+          name: valkey
+        # Resource requirements for Kyverno policy compliance
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 128Mi
+        # Security context for container (Kyverno policy compliance)
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10000
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        env:
+        - name: VALKEY_AUTH
+          valueFrom:
+            secretKeyRef:
+              name: argo-workflows-config
+              key: valkey-password
+        # Health probes for Kyverno policy compliance
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              valkey-cli -a "$VALKEY_AUTH" ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              valkey-cli -a "$VALKEY_AUTH" ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: "/etc/valkey"
+          readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: valkey
+            items:
+            - key: "valkey.conf"
+              path: "valkey.conf"
