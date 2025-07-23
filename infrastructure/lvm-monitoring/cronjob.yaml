@@ -5,8 +5,8 @@ metadata:
   name: lvm-metrics-daily
   namespace: lvm-monitoring
 spec:
-  # Run at 2 AM every day
-  schedule: "0 2 * * *"
+  # Run every 4 hours
+  schedule: "0 */4 * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 7
   failedJobsHistoryLimit: 3
@@ -21,10 +21,39 @@ spec:
           serviceAccountName: lvm-monitor
           restartPolicy: OnFailure
           containers:
-          - name: metrics-exporter
-            # Override this in your cluster kustomization
-            image: harbor.golder.lan/library/lvm-metrics-exporter:latest
+          - name: monitor
+            image: bitnami/kubectl:latest
             imagePullPolicy: IfNotPresent
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Install required tools
+              apt-get update && apt-get install -y jq curl awscli ca-certificates python3 python3-pip
+              
+              # Install Python dependencies for metrics exporter
+              pip3 install kubernetes==28.1.0 prometheus-client==0.19.0
+              
+              # Update CA certificates to include custom CAs
+              if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
+                cp /etc/ssl/certs/golder-ca-certs/ca.crt /usr/local/share/ca-certificates/golder-ca.crt
+                update-ca-certificates
+              fi
+              
+              # Run the monitoring script
+              /opt/scripts/monitor-lvm.sh
+              
+              # Run the Python metrics exporter
+              python3 /opt/scripts/lvm-metrics-exporter.py
+            volumeMounts:
+            - name: scripts
+              mountPath: /opt/scripts
+            - name: python-script
+              mountPath: /opt/scripts/lvm-metrics-exporter.py
+              subPath: lvm-metrics-exporter.py
+            - name: ca-bundle
+              mountPath: /etc/ssl/certs/golder-ca-certs
+              readOnly: true
             env:
             - name: CLUSTER_NAME
               value: "kubernetes"  # Override in cluster kustomization
@@ -32,20 +61,40 @@ spec:
               value: "http://prometheus-pushgateway.monitoring.svc.cluster.local:9091"
             - name: LOG_LEVEL
               value: "INFO"
-            # Single run for CronJob
             - name: RUN_INTERVAL_SECONDS
               value: "0"
+            - name: KUBERNETES_CONTEXT
+              value: "kubernetes"  # Override in cluster kustomization
             resources:
               requests:
-                memory: "128Mi"
+                memory: "256Mi"
                 cpu: "100m"
               limits:
-                memory: "256Mi"
+                memory: "512Mi"
                 cpu: "500m"
             envFrom:
             - secretRef:
                 name: push-gateway-auth
                 optional: true
+            - secretRef:
+                name: lvm-reports-minio
+                optional: true
+            - secretRef:
+                name: lvm-monitor-webhook
+                optional: true
+          volumes:
+          - name: scripts
+            configMap:
+              name: lvm-monitor-scripts
+              defaultMode: 0755
+          - name: python-script
+            configMap:
+              name: lvm-metrics-exporter-script
+              defaultMode: 0755
+          - name: ca-bundle
+            secret:
+              secretName: golder-ca-certs
+              optional: true
 
 ---
 apiVersion: batch/v1
@@ -70,32 +119,30 @@ spec:
           serviceAccountName: lvm-monitor
           restartPolicy: OnFailure
           containers:
-          - name: quick-check
+          - name: monitor
             image: bitnami/kubectl:latest
             imagePullPolicy: IfNotPresent
             command:
             - /bin/bash
             - -c
             - |
-              # Quick check for critical issues
-              FAILED_PVCS=$(kubectl get pvc -A | grep -v Bound | grep -v NAMESPACE | wc -l)
-
-              if [ "$FAILED_PVCS" -gt 0 ]; then
-                echo "ALERT: $FAILED_PVCS failed or pending PVCs detected"
-                kubectl get pvc -A | grep -v Bound | grep -v NAMESPACE
-
-                # Send alert if webhook is configured
-                if [ -n "$DISCORD_WEBHOOK_URL" ]; then
-                  kubectl get pvc -A | grep -v Bound | grep -v NAMESPACE > /tmp/failed-pvcs.txt
-                  ALERT_MSG="🚨 **LVM Storage Alert**\n$FAILED_PVCS PVCs are failing to provision"
-                  curl -H "Content-Type: application/json" \
-                       -d "{\"content\": \"$ALERT_MSG\"}" \
-                       "$DISCORD_WEBHOOK_URL" || true
-                fi
-                exit 1
+              # Install required tools
+              apt-get update && apt-get install -y jq curl awscli ca-certificates
+              
+              # Update CA certificates to include custom CAs
+              if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
+                cp /etc/ssl/certs/golder-ca-certs/ca.crt /usr/local/share/ca-certificates/golder-ca.crt
+                update-ca-certificates
               fi
-
-              echo "All PVCs are healthy"
+              
+              # Run the monitoring script
+              /opt/scripts/monitor-lvm.sh
+            volumeMounts:
+            - name: scripts
+              mountPath: /opt/scripts
+            - name: ca-bundle
+              mountPath: /etc/ssl/certs/golder-ca-certs
+              readOnly: true
             resources:
               requests:
                 memory: "64Mi"
@@ -105,5 +152,20 @@ spec:
                 cpu: "200m"
             envFrom:
             - secretRef:
+                name: lvm-reports-minio
+                optional: true
+            - secretRef:
                 name: lvm-monitor-webhook
                 optional: true
+            env:
+            - name: KUBERNETES_CONTEXT
+              value: "kubernetes"  # Override in cluster kustomization
+          volumes:
+          - name: scripts
+            configMap:
+              name: lvm-monitor-scripts
+              defaultMode: 0755
+          - name: ca-bundle
+            secret:
+              secretName: golder-ca-certs
+              optional: true

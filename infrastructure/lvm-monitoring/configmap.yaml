@@ -246,11 +246,83 @@ data:
     # Save report
     echo -e "\n${GREEN}Report saved to: ${REPORT_FILE}${NC}"
 
-    # Optional: Send to monitoring system or S3
-    # aws s3 cp "${REPORT_FILE}" "s3://monitoring-bucket/lvm-reports/" || true
+    # Upload to MinIO if credentials are available
+    if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+        echo -e "\n${BLUE}Uploading report to MinIO...${NC}"
+        
+        # Configure AWS CLI for MinIO
+        export AWS_ENDPOINT_URL="$S3_ENDPOINT"
+        export AWS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
+        
+        # Generate report filename with timestamp
+        REPORT_NAME="lvm-report-$(date +%Y%m%d-%H%M%S).json"
+        HTML_NAME="lvm-report-$(date +%Y%m%d-%H%M%S).html"
+        
+        # Upload JSON report
+        if aws s3 cp "${REPORT_FILE}" "s3://${S3_BUCKET}/${S3_PREFIX}/${REPORT_NAME}" --no-verify-ssl 2>/dev/null; then
+            echo -e "${GREEN}JSON report uploaded successfully${NC}"
+            REPORT_URL="https://infra.golder.lan/lvm-reports/${S3_PREFIX}/${REPORT_NAME}"
+            
+            # Generate and upload HTML report
+            /opt/scripts/generate-html-report.sh
+            if [ -f "/tmp/lvm-report-$(date +%Y%m%d).html" ]; then
+                if aws s3 cp "/tmp/lvm-report-$(date +%Y%m%d).html" "s3://${S3_BUCKET}/${S3_PREFIX}/${HTML_NAME}" --no-verify-ssl 2>/dev/null; then
+                    echo -e "${GREEN}HTML report uploaded successfully${NC}"
+                    HTML_URL="https://infra.golder.lan/lvm-reports/${S3_PREFIX}/${HTML_NAME}"
+                fi
+            fi
+            
+            # Send Discord notification if webhook is configured
+            if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+                echo -e "\n${BLUE}Sending Discord notification...${NC}"
+                
+                # Create Discord message with summary
+                DISCORD_MSG=$(cat <<EOF
+{
+  "embeds": [{
+    "title": "LVM Storage Report - ${CONTEXT}",
+    "description": "Storage monitoring report generated at $(date)",
+    "color": 3447003,
+    "fields": [
+      {
+        "name": "Total Allocated",
+        "value": "${TOTAL_ALLOCATED_HUMAN}",
+        "inline": true
+      },
+      {
+        "name": "Orphaned PVCs",
+        "value": "${ORPHANED_COUNT}",
+        "inline": true
+      },
+      {
+        "name": "Failed PVCs",
+        "value": "${FAILED_PVCS}",
+        "inline": true
+      }
+    ],
+    "footer": {
+      "text": "Click below for full reports"
+    }
+  }],
+  "content": "📊 **LVM Storage Report Available**\n[View JSON Report](${REPORT_URL})\n[View HTML Report](${HTML_URL:-$REPORT_URL})"
+}
+EOF
+)
+                
+                if curl -H "Content-Type: application/json" -d "$DISCORD_MSG" "$DISCORD_WEBHOOK_URL" 2>/dev/null; then
+                    echo -e "${GREEN}Discord notification sent${NC}"
+                else
+                    echo -e "${YELLOW}Failed to send Discord notification${NC}"
+                fi
+            fi
+        else
+            echo -e "${YELLOW}Failed to upload report to MinIO${NC}"
+        fi
+    fi
 
     # Clean up old reports (keep last 7 days)
     find /tmp -name "lvm-report-*.json" -mtime +7 -delete || true
+    find /tmp -name "lvm-report-*.html" -mtime +7 -delete || true
 
   generate-html-report.sh: |
     #!/bin/bash

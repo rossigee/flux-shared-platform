@@ -20,3 +20,6 @@ configMapGenerator:
     behavior: create
     literals:
       - CLUSTER_NAME=kubernetes
+  - name: lvm-metrics-exporter-script
+    files:
+      - lvm-metrics-exporter.py
