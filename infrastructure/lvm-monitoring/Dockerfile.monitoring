@@ -13,12 +13,10 @@ RUN curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubec
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
-# Install AWS CLI v2
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    apt-get update && apt-get install -y --no-install-recommends unzip && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf awscliv2.zip aws /var/lib/apt/lists/*
+# Install MinIO client
+RUN curl -LO "https://dl.min.io/client/mc/release/linux-amd64/mc" && \
+    chmod +x mc && \
+    mv mc /usr/local/bin/
 
 # Final stage
 FROM python:3.11-slim
@@ -30,10 +28,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy kubectl and aws from builder
+# Copy kubectl and mc from builder
 COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/kubectl
-COPY --from=builder /usr/local/bin/aws /usr/local/bin/aws
-COPY --from=builder /usr/local/aws-cli /usr/local/aws-cli
+COPY --from=builder /usr/local/bin/mc /usr/local/bin/mc
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \

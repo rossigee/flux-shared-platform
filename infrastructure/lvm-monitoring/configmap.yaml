@@ -250,23 +250,22 @@ data:
     if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
         echo -e "\n${BLUE}Uploading report to MinIO...${NC}"
 
-        # Configure AWS CLI for MinIO
-        export AWS_ENDPOINT_URL="$S3_ENDPOINT"
-        export AWS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
+        # Configure MinIO client
+        mc alias set lvm-minio "$S3_ENDPOINT" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" --insecure 2>/dev/null
 
         # Generate report filename with timestamp
         REPORT_NAME="lvm-report-$(date +%Y%m%d-%H%M%S).json"
         HTML_NAME="lvm-report-$(date +%Y%m%d-%H%M%S).html"
 
         # Upload JSON report
-        if aws s3 cp "${REPORT_FILE}" "s3://${S3_BUCKET}/${S3_PREFIX}/${REPORT_NAME}" --no-verify-ssl 2>/dev/null; then
+        if mc cp "${REPORT_FILE}" "lvm-minio/${S3_BUCKET}/${S3_PREFIX}/${REPORT_NAME}" --insecure 2>/dev/null; then
             echo -e "${GREEN}JSON report uploaded successfully${NC}"
             REPORT_URL="https://infra.golder.lan/lvm-reports/${S3_PREFIX}/${REPORT_NAME}"
 
             # Generate and upload HTML report
             /opt/scripts/generate-html-report.sh
             if [ -f "/tmp/lvm-report-$(date +%Y%m%d).html" ]; then
-                if aws s3 cp "/tmp/lvm-report-$(date +%Y%m%d).html" "s3://${S3_BUCKET}/${S3_PREFIX}/${HTML_NAME}" --no-verify-ssl 2>/dev/null; then
+                if mc cp "/tmp/lvm-report-$(date +%Y%m%d).html" "lvm-minio/${S3_BUCKET}/${S3_PREFIX}/${HTML_NAME}" --insecure 2>/dev/null; then
                     echo -e "${GREEN}HTML report uploaded successfully${NC}"
                     HTML_URL="https://infra.golder.lan/lvm-reports/${S3_PREFIX}/${HTML_NAME}"
                 fi

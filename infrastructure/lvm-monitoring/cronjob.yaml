@@ -48,9 +48,9 @@ spec:
             - |
               # Export CA bundle if available
               if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
-                export AWS_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
                 export CURL_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
                 export SSL_CERT_FILE=/etc/ssl/certs/golder-ca-certs/ca.crt
+                export MC_INSECURE=true  # Use --insecure flag in mc commands instead
               fi
               
               # Run the monitoring script
@@ -159,9 +159,9 @@ spec:
             - |
               # Export CA bundle if available
               if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
-                export AWS_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
                 export CURL_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
                 export SSL_CERT_FILE=/etc/ssl/certs/golder-ca-certs/ca.crt
+                export MC_INSECURE=true  # Use --insecure flag in mc commands instead
               fi
               
               # Run the monitoring script

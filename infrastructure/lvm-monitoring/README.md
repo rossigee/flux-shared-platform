@@ -84,7 +84,7 @@ docker push harbor.golder.lan/infrastructure/lvm-monitor:latest
 The custom image includes:
 - `kubectl` - For Kubernetes API access
 - `jq` - For JSON parsing
-- `aws` CLI - For MinIO S3 uploads
+- `mc` (MinIO Client) - For MinIO uploads
 - `curl` - For Discord webhooks
 - `python3` with `kubernetes` and `prometheus-client` packages
 - Runs as non-root user (UID 10001)
