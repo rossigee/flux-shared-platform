@@ -1,41 +1,13 @@
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImageRepository
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
 metadata:
   name: csi-driver-lvm
+  namespace: flux-system
 spec:
-  image: ghcr.io/metal-stack/csi-driver-lvm
-  interval: 20m
-
----
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImagePolicy
-metadata:
-  name: csi-driver-lvm
-spec:
-  imageRepositoryRef:
-    name: csi-driver-lvm
-  policy:
-    semver:
-      range: '>=0.5.0'
-
----
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImageRepository
-metadata:
-  name: csi-driver-lvm-provisioner
-spec:
-  image: ghcr.io/metal-stack/csi-driver-lvm-provisioner
-  interval: 20m
-
----
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImagePolicy
-metadata:
-  name: csi-driver-lvm-provisioner
-spec:
-  imageRepositoryRef:
-    name: csi-driver-lvm-provisioner
-  policy:
-    semver:
-      range: '>=0.5.0'
+  interval: 18m
+  path: ./infrastructure/csi-driver-lvm
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-golder

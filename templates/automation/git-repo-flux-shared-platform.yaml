@@ -1,0 +1,14 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-shared-platform
+  namespace: flux-system
+spec:
+  interval: 18m
+  ref:
+    branch: master
+  secretRef:
+    name: ssh-key
+  timeout: 5m
+  url: ssh://git@github.com/rossigee/flux-shared-platform.git
