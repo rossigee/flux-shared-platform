@@ -11,25 +11,18 @@ spec:
   chart:
     spec:
       chart: cert-manager
-      version: v1.16.0
+      version: v1.18.2
       sourceRef:
         kind: HelmRepository
         name: jetstack
         namespace: cert-manager
   values:
     installCRDs: true
+    dns01RecursiveNameservers: 1.1.1.1:53
     global:
       podSecurityPolicy:
         enabled: false
         useAppArmor: false
-      # Security context for all cert-manager pods
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1001
-        runAsGroup: 1001
-        fsGroup: 1001
-        seccompProfile:
-          type: RuntimeDefault
       
     # Controller security configuration
     securityContext:
