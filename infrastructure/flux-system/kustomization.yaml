@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: flux-system
 resources:
   - cilium-network-policy.yaml
+  - flux-upstream.yaml

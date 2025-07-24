@@ -1,0 +1,47 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-upstream
+  namespace: flux-system
+spec:
+  interval: 30m
+  ref:
+    tag: v2.6.4
+  url: https://github.com/fluxcd/flux2
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: flux-components
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./manifests/install
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-upstream
+  targetNamespace: flux-system
+  wait: true
+  patches:
+  - patch: |-
+      - op: replace
+        path: /spec/ports
+        value:
+        - name: http-prom
+          port: 8080
+          protocol: TCP
+          targetPort: http-prom
+        - name: http
+          port: 9090
+          protocol: TCP
+          targetPort: http
+        - name: healthz
+          port: 9440
+          protocol: TCP
+          targetPort: healthz
+    target:
+      kind: Service
+      name: source-controller
+      namespace: flux-system
