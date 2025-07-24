@@ -61,7 +61,39 @@ See the full list in the individual cluster implementations.
 
 ## Building the Container
 
+### Container Image
+
+The monitoring scripts require a custom container image with pre-installed tools to comply with Pod Security Standards (no root access).
+
+### Building the Container
+
 ```bash
-docker build -t your-registry/lvm-metrics-exporter:latest .
-docker push your-registry/lvm-metrics-exporter:latest
+# Build the container image
+./build-and-push.sh v1.0.0
+
+# Login to Harbor
+docker login harbor.golder.lan
+
+# Push the image
+docker push harbor.golder.lan/infrastructure/lvm-monitor:v1.0.0
+docker push harbor.golder.lan/infrastructure/lvm-monitor:latest
 ```
+
+### Container Contents
+
+The custom image includes:
+- `kubectl` - For Kubernetes API access
+- `jq` - For JSON parsing
+- `aws` CLI - For MinIO S3 uploads
+- `curl` - For Discord webhooks
+- `python3` with `kubernetes` and `prometheus-client` packages
+- Runs as non-root user (UID 10001)
+
+### Security Compliance
+
+The container and CronJobs are configured to comply with Kubernetes Pod Security Standards "restricted" profile:
+- Runs as non-root user (10001)
+- No privilege escalation allowed
+- All capabilities dropped
+- Seccomp profile enabled
+- Read-only root filesystem compatible

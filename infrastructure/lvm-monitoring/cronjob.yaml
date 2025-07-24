@@ -20,24 +20,37 @@ spec:
         spec:
           serviceAccountName: lvm-monitor
           restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: container-repo-auth
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: monitor
-            image: bitnami/kubectl:latest
+            image: harbor.golder.lan/infrastructure/lvm-monitor:v1.0.0
             imagePullPolicy: IfNotPresent
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              runAsUser: 10001
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
             command:
             - /bin/bash
             - -c
             - |
-              # Install required tools
-              apt-get update && apt-get install -y jq curl awscli ca-certificates python3 python3-pip
-              
-              # Install Python dependencies for metrics exporter
-              pip3 install kubernetes==28.1.0 prometheus-client==0.19.0
-              
-              # Update CA certificates to include custom CAs
+              # Export CA bundle if available
               if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
-                cp /etc/ssl/certs/golder-ca-certs/ca.crt /usr/local/share/ca-certificates/golder-ca.crt
-                update-ca-certificates
+                export AWS_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
+                export CURL_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
+                export SSL_CERT_FILE=/etc/ssl/certs/golder-ca-certs/ca.crt
               fi
               
               # Run the monitoring script
@@ -67,10 +80,10 @@ spec:
               value: "kubernetes"  # Override in cluster kustomization
             resources:
               requests:
-                memory: "256Mi"
+                memory: "512Mi"
                 cpu: "100m"
               limits:
-                memory: "512Mi"
+                memory: "2Gi"
                 cpu: "500m"
             envFrom:
             - secretRef:
@@ -118,21 +131,37 @@ spec:
         spec:
           serviceAccountName: lvm-monitor
           restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: container-repo-auth
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: monitor
-            image: bitnami/kubectl:latest
+            image: harbor.golder.lan/infrastructure/lvm-monitor:v1.0.0
             imagePullPolicy: IfNotPresent
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              runAsUser: 10001
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
             command:
             - /bin/bash
             - -c
             - |
-              # Install required tools
-              apt-get update && apt-get install -y jq curl awscli ca-certificates
-              
-              # Update CA certificates to include custom CAs
+              # Export CA bundle if available
               if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
-                cp /etc/ssl/certs/golder-ca-certs/ca.crt /usr/local/share/ca-certificates/golder-ca.crt
-                update-ca-certificates
+                export AWS_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
+                export CURL_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
+                export SSL_CERT_FILE=/etc/ssl/certs/golder-ca-certs/ca.crt
               fi
               
               # Run the monitoring script
@@ -145,11 +174,11 @@ spec:
               readOnly: true
             resources:
               requests:
-                memory: "64Mi"
-                cpu: "50m"
+                memory: "256Mi"
+                cpu: "100m"
               limits:
-                memory: "128Mi"
-                cpu: "200m"
+                memory: "1Gi"
+                cpu: "500m"
             envFrom:
             - secretRef:
                 name: lvm-reports-minio
