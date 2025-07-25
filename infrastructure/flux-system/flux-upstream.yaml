@@ -24,23 +24,26 @@ spec:
     name: flux-upstream
   targetNamespace: flux-system
   wait: true
+  # Exclude source-controller from flux-components since clusters provide their own custom version
   patches:
   - patch: |-
-      - op: replace
-        path: /spec/ports
-        value:
-        - name: http-prom
-          port: 8080
-          protocol: TCP
-          targetPort: http-prom
-        - name: http
-          port: 9090
-          protocol: TCP
-          targetPort: http
-        - name: healthz
-          port: 9440
-          protocol: TCP
-          targetPort: healthz
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: source-controller
+        namespace: flux-system
+    target:
+      kind: Deployment
+      name: source-controller
+      namespace: flux-system
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: source-controller
+        namespace: flux-system
     target:
       kind: Service
       name: source-controller
