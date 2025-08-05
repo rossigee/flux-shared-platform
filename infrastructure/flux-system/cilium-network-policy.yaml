@@ -12,14 +12,18 @@ metadata:
   namespace: flux-system
 spec:
   endpointSelector:
-    matchLabels:
-      k8s:io.kubernetes.pod.namespace: flux-system
+    matchExpressions:
+    - key: app
+      operator: In
+      values: [source-controller, kustomize-controller, helm-controller, notification-controller, image-automation-controller, image-reflector-controller]
   ingress:
     # Allow all Flux components to communicate with each other across nodes
     # This is essential for kustomize-controller to fetch artifacts from source-controller
     - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: flux-system
+        - matchExpressions:
+          - key: app
+            operator: In
+            values: [source-controller, kustomize-controller, helm-controller, notification-controller, image-automation-controller, image-reflector-controller]
       toPorts:
         # source-controller artifact server (service port)
         - ports:
@@ -42,17 +46,25 @@ spec:
     # Allow Prometheus scraping
     - fromEndpoints:
         - matchLabels:
-            k8s:io.kubernetes.pod.namespace: monitoring
             app.kubernetes.io/name: prometheus
       toPorts:
         - ports:
             - port: "8080"
               protocol: TCP
+    # Allow kubelet health checks (from host network)
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "9440"
+              protocol: TCP
   egress:
     # Allow unrestricted communication within flux-system namespace
     - toEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: flux-system
+        - matchExpressions:
+          - key: app
+            operator: In
+            values: [source-controller, kustomize-controller, helm-controller, notification-controller, image-automation-controller, image-reflector-controller]
     # Allow all external egress (Flux needs to reach Git, registries, etc.)
     - toEntities:
         - world
