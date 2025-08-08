@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Contributing Guide
+  #
+
+
+  Overview
+  #
+
+This repository contains shared GitOps manifests and templates for Kubernetes infrastructure. Contributions should focus on reusable, generic components that can benefit multiple clusters and organizations.
+
+  What to Contribute
+  #
+
+
+  ✅ Good Contributions
+  #
+
+
+Generic infrastructure component definitions
+Reusable automation templates
+Common monitoring and alerting patterns
+Documentation improvements
+Bug fixes and security improvements
+Template parameterization improvements
+
+
+  ❌ What Not to Include
+  #
+
+
+Secrets or sensitive data
+Organization-specific configurations
+Hardcoded hostnames or domains
+Private certificates or keys
+Cluster-specific networking configurations
+
+
+  Contribution Process
+  #
+
+
+  1. Fork and Clone
+  #
+
+git clone https://github.com/rossigee/flux-shared-platform.git
+cd flux-shared-platform
+
+  2. Create a Branch
+  #
+
+git checkout -b feature/your-feature-name
+
+  3. Make Changes
+  #
+
+
+Follow the existing directory structure
+Use template parameters for customizable values
+Add documentation for new components
+Test changes in a development environment
+
+
+  4. Template Guidelines
+  #
+
+When creating templates:">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/contributing/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Contributing Guide">
+  <meta property="og:description" content="Contributing Guide # Overview # This repository contains shared GitOps manifests and templates for Kubernetes infrastructure. Contributions should focus on reusable, generic components that can benefit multiple clusters and organizations.
+What to Contribute # ✅ Good Contributions # Generic infrastructure component definitions Reusable automation templates Common monitoring and alerting patterns Documentation improvements Bug fixes and security improvements Template parameterization improvements ❌ What Not to Include # Secrets or sensitive data Organization-specific configurations Hardcoded hostnames or domains Private certificates or keys Cluster-specific networking configurations Contribution Process # 1. Fork and Clone # git clone https://github.com/rossigee/flux-shared-platform.git cd flux-shared-platform 2. Create a Branch # git checkout -b feature/your-feature-name 3. Make Changes # Follow the existing directory structure Use template parameters for customizable values Add documentation for new components Test changes in a development environment 4. Template Guidelines # When creating templates:">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="docs">
+<title>Contributing Guide | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/contributing/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="active">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Contributing Guide</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#contributing-guide">Contributing Guide</a>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#what-to-contribute">What to Contribute</a>
+          <ul>
+            <li><a href="#-good-contributions">✅ Good Contributions</a></li>
+            <li><a href="#-what-not-to-include">❌ What Not to Include</a></li>
+          </ul>
+        </li>
+        <li><a href="#contribution-process">Contribution Process</a>
+          <ul>
+            <li><a href="#1-fork-and-clone">1. Fork and Clone</a></li>
+            <li><a href="#2-create-a-branch">2. Create a Branch</a></li>
+            <li><a href="#3-make-changes">3. Make Changes</a></li>
+            <li><a href="#4-template-guidelines">4. Template Guidelines</a></li>
+            <li><a href="#5-documentation">5. Documentation</a></li>
+            <li><a href="#6-testing">6. Testing</a></li>
+            <li><a href="#7-submit-pull-request">7. Submit Pull Request</a></li>
+          </ul>
+        </li>
+        <li><a href="#code-of-conduct">Code of Conduct</a></li>
+        <li><a href="#questions">Questions?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="contributing-guide">
+  Contributing Guide
+  <a class="anchor" href="#contributing-guide">#</a>
+</h1>
+<h2 id="overview">
+  Overview
+  <a class="anchor" href="#overview">#</a>
+</h2>
+<p>This repository contains shared GitOps manifests and templates for Kubernetes infrastructure. Contributions should focus on reusable, generic components that can benefit multiple clusters and organizations.</p>
+<h2 id="what-to-contribute">
+  What to Contribute
+  <a class="anchor" href="#what-to-contribute">#</a>
+</h2>
+<h3 id="-good-contributions">
+  ✅ Good Contributions
+  <a class="anchor" href="#-good-contributions">#</a>
+</h3>
+<ul>
+<li>Generic infrastructure component definitions</li>
+<li>Reusable automation templates</li>
+<li>Common monitoring and alerting patterns</li>
+<li>Documentation improvements</li>
+<li>Bug fixes and security improvements</li>
+<li>Template parameterization improvements</li>
+</ul>
+<h3 id="-what-not-to-include">
+  ❌ What Not to Include
+  <a class="anchor" href="#-what-not-to-include">#</a>
+</h3>
+<ul>
+<li>Secrets or sensitive data</li>
+<li>Organization-specific configurations</li>
+<li>Hardcoded hostnames or domains</li>
+<li>Private certificates or keys</li>
+<li>Cluster-specific networking configurations</li>
+</ul>
+<h2 id="contribution-process">
+  Contribution Process
+  <a class="anchor" href="#contribution-process">#</a>
+</h2>
+<h3 id="1-fork-and-clone">
+  1. Fork and Clone
+  <a class="anchor" href="#1-fork-and-clone">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone https://github.com/rossigee/flux-shared-platform.git
+</span></span><span style="display:flex;"><span>cd flux-shared-platform
+</span></span></code></pre></div><h3 id="2-create-a-branch">
+  2. Create a Branch
+  <a class="anchor" href="#2-create-a-branch">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git checkout -b feature/your-feature-name
+</span></span></code></pre></div><h3 id="3-make-changes">
+  3. Make Changes
+  <a class="anchor" href="#3-make-changes">#</a>
+</h3>
+<ul>
+<li>Follow the existing directory structure</li>
+<li>Use template parameters for customizable values</li>
+<li>Add documentation for new components</li>
+<li>Test changes in a development environment</li>
+</ul>
+<h3 id="4-template-guidelines">
+  4. Template Guidelines
+  <a class="anchor" href="#4-template-guidelines">#</a>
+</h3>
+<p>When creating templates:</p>
+<ul>
+<li>Use ALL_CAPS placeholders for variables (e.g., <code>COMPONENT_NAME</code>)</li>
+<li>Include comments explaining required substitutions</li>
+<li>Provide reasonable defaults where possible</li>
+<li>Document any dependencies or prerequisites</li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># Replace COMPONENT_NAME with actual component name</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">COMPONENT_NAME</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">NAMESPACE_NAME </span> <span style="color:#75715e"># Replace with target namespace</span>
+</span></span></code></pre></div><h3 id="5-documentation">
+  5. Documentation
+  <a class="anchor" href="#5-documentation">#</a>
+</h3>
+<ul>
+<li>Update README.md if adding new directories</li>
+<li>Add usage examples for new components</li>
+<li>Include security considerations for new features</li>
+<li>Update this documentation site with new patterns</li>
+</ul>
+<h3 id="6-testing">
+  6. Testing
+  <a class="anchor" href="#6-testing">#</a>
+</h3>
+<p>Before submitting:</p>
+<ul>
+<li>Validate YAML syntax</li>
+<li>Test templates with actual values</li>
+<li>Verify no sensitive data is included</li>
+<li>Check for spelling and grammar errors</li>
+</ul>
+<h3 id="7-submit-pull-request">
+  7. Submit Pull Request
+  <a class="anchor" href="#7-submit-pull-request">#</a>
+</h3>
+<ul>
+<li>Provide clear description of changes</li>
+<li>Reference any related issues</li>
+<li>Include testing instructions</li>
+<li>Request review from maintainers</li>
+</ul>
+<h2 id="code-of-conduct">
+  Code of Conduct
+  <a class="anchor" href="#code-of-conduct">#</a>
+</h2>
+<ul>
+<li>Be respectful and inclusive</li>
+<li>Focus on constructive feedback</li>
+<li>Help others learn and improve</li>
+<li>Follow security best practices</li>
+</ul>
+<h2 id="questions">
+  Questions?
+  <a class="anchor" href="#questions">#</a>
+</h2>
+<ul>
+<li>Open an issue for questions</li>
+<li>Check existing documentation first</li>
+<li>Provide context when asking for help</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/flux-shared-platform/docs/testing/" class="flex align-center book-icon">
+        <img src="/flux-shared-platform/svg/backward.svg" class="book-icon" alt="Previous" title="Testing Guide" />
+        <span>Testing Guide</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/flux-shared-platform/docs/components/" class="flex align-center book-icon">
+        <span>Component Reference</span>
+        <img src="/flux-shared-platform/svg/forward.svg" class="book-icon" alt="Next" title="Component Reference" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#contributing-guide">Contributing Guide</a>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#what-to-contribute">What to Contribute</a>
+          <ul>
+            <li><a href="#-good-contributions">✅ Good Contributions</a></li>
+            <li><a href="#-what-not-to-include">❌ What Not to Include</a></li>
+          </ul>
+        </li>
+        <li><a href="#contribution-process">Contribution Process</a>
+          <ul>
+            <li><a href="#1-fork-and-clone">1. Fork and Clone</a></li>
+            <li><a href="#2-create-a-branch">2. Create a Branch</a></li>
+            <li><a href="#3-make-changes">3. Make Changes</a></li>
+            <li><a href="#4-template-guidelines">4. Template Guidelines</a></li>
+            <li><a href="#5-documentation">5. Documentation</a></li>
+            <li><a href="#6-testing">6. Testing</a></li>
+            <li><a href="#7-submit-pull-request">7. Submit Pull Request</a></li>
+          </ul>
+        </li>
+        <li><a href="#code-of-conduct">Code of Conduct</a></li>
+        <li><a href="#questions">Questions?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

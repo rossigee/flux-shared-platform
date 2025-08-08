@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+	<meta name="generator" content="Hugo 0.147.9"><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A comprehensive library of reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Flux Shared Platform - Reusable GitOps Components">
+  <meta property="og:description" content="A comprehensive library of reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="website">
+<title>Flux Shared Platform - Reusable GitOps Components | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<link rel="alternate" type="application/rss+xml" href="http://localhost:1313/flux-shared-platform/index.xml" title="Flux Shared Platform Documentation" />
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Flux Shared Platform - Reusable GitOps Components</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#flux-shared-platform">Flux Shared Platform</a>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#quick-start">Quick Start</a></li>
+        <li><a href="#key-features">Key Features</a></li>
+        <li><a href="#repository-structure">Repository Structure</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="flux-shared-platform">
+  Flux Shared Platform
+  <a class="anchor" href="#flux-shared-platform">#</a>
+</h1>
+<p>A collection of reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD.</p>
+<h2 id="overview">
+  Overview
+  <a class="anchor" href="#overview">#</a>
+</h2>
+<p>This repository provides a centralized library of reusable GitOps manifests and templates for:</p>
+<ul>
+<li>Common infrastructure component definitions</li>
+<li>Reusable automation templates and monitoring patterns</li>
+<li>RBAC templates and networking configurations</li>
+<li>Cross-cluster shared Helm repository definitions</li>
+</ul>
+<h2 id="quick-start">
+  Quick Start
+  <a class="anchor" href="#quick-start">#</a>
+</h2>
+<p>Get started quickly by adding the shared platform as a GitRepository source in your Flux configuration and referencing shared components in your cluster deployments.</p>
+<h2 id="key-features">
+  Key Features
+  <a class="anchor" href="#key-features">#</a>
+</h2>
+<ul>
+<li><strong>Security-First Design</strong>: Zero embedded secrets, parameterized configurations</li>
+<li><strong>Reusable Components</strong>: Common infrastructure patterns for cert-manager, external-secrets, argo-workflows, and more</li>
+<li><strong>Customizable</strong>: Use Kustomize overlays and Helm values for environment-specific customization</li>
+<li><strong>Well-Tested</strong>: Comprehensive validation scripts and testing procedures</li>
+</ul>
+<h2 id="repository-structure">
+  Repository Structure
+  <a class="anchor" href="#repository-structure">#</a>
+</h2>
+<pre tabindex="0"><code>flux-shared-platform/
+├── infrastructure/          # Core platform components
+├── helm-repos/             # Common Helm repository definitions  
+├── templates/              # Reusable automation and monitoring templates
+├── examples/               # Reference implementations and patterns
+└── scripts/                # Validation and testing utilities
+</code></pre></article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#flux-shared-platform">Flux Shared Platform</a>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#quick-start">Quick Start</a></li>
+        <li><a href="#key-features">Key Features</a></li>
+        <li><a href="#repository-structure">Repository Structure</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

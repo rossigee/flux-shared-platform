@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Documentation
+  #
+
+This section contains comprehensive documentation for the Flux Shared Platform, including usage guides, migration instructions, testing procedures, and contributing guidelines.
+
+  Sections
+  #
+
+
+
+  Usage Guide - How to use the shared platform in your clusters
+
+  Migration Guide - Migrating from duplicated manifests to shared components
+
+  Testing Guide - Validation and testing procedures
+
+  Contributing Guide - Guidelines for contributing to the project
+">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Documentation">
+  <meta property="og:description" content="Documentation # This section contains comprehensive documentation for the Flux Shared Platform, including usage guides, migration instructions, testing procedures, and contributing guidelines.
+Sections # Usage Guide - How to use the shared platform in your clusters Migration Guide - Migrating from duplicated manifests to shared components Testing Guide - Validation and testing procedures Contributing Guide - Guidelines for contributing to the project">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="website">
+<title>Documentation | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<link rel="alternate" type="application/rss+xml" href="http://localhost:1313/flux-shared-platform/docs/index.xml" title="Flux Shared Platform Documentation" />
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Documentation</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#documentation">Documentation</a>
+      <ul>
+        <li><a href="#sections">Sections</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="documentation">
+  Documentation
+  <a class="anchor" href="#documentation">#</a>
+</h1>
+<p>This section contains comprehensive documentation for the Flux Shared Platform, including usage guides, migration instructions, testing procedures, and contributing guidelines.</p>
+<h2 id="sections">
+  Sections
+  <a class="anchor" href="#sections">#</a>
+</h2>
+<ul>
+<li><strong>
+  <a href="/flux-shared-platform/docs/usage/">Usage Guide</a></strong> - How to use the shared platform in your clusters</li>
+<li><strong>
+  <a href="/flux-shared-platform/docs/migration/">Migration Guide</a></strong> - Migrating from duplicated manifests to shared components</li>
+<li><strong>
+  <a href="/flux-shared-platform/docs/testing/">Testing Guide</a></strong> - Validation and testing procedures</li>
+<li><strong>
+  <a href="/flux-shared-platform/docs/contributing/">Contributing Guide</a></strong> - Guidelines for contributing to the project</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#documentation">Documentation</a>
+      <ul>
+        <li><a href="#sections">Sections</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

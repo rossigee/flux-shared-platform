@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Testing Guide
+  #
+
+This guide provides instructions for testing the flux-shared-platform migration and components.
+
+  Validation Script
+  #
+
+Use the provided validation script to check migration status:
+./scripts/validate-migration.sh
+This script will:
+
+Check that GitRepository sources are ready
+Verify Helm repositories are available
+Validate infrastructure components are deployed
+Review HelmRelease status across namespaces
+Show recent Flux events
+
+
+  Manual Testing Steps
+  #
+
+
+  1. Check Git Sources
+  #
+
+flux get sources git
+kubectl get gitrepository flux-shared-platform -n flux-system -o yaml
+
+  2. Verify Helm Repositories
+  #
+
+flux get sources helm
+helm repo list
+
+  3. Test Component Deployments
+  #
+
+# Check shared components
+kubectl get kustomizations -n flux-system | grep shared
+
+# Check HelmReleases
+kubectl get helmreleases -A
+
+# Verify pods are running
+kubectl get pods -n cert-manager
+kubectl get pods -n external-secrets
+kubectl get pods -n argo-workflows
+
+  4. Test Customizations
+  #
+
+Verify that cluster-specific patches are working:">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/testing/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Testing Guide">
+  <meta property="og:description" content="Testing Guide # This guide provides instructions for testing the flux-shared-platform migration and components.
+Validation Script # Use the provided validation script to check migration status:
+./scripts/validate-migration.sh This script will:
+Check that GitRepository sources are ready Verify Helm repositories are available Validate infrastructure components are deployed Review HelmRelease status across namespaces Show recent Flux events Manual Testing Steps # 1. Check Git Sources # flux get sources git kubectl get gitrepository flux-shared-platform -n flux-system -o yaml 2. Verify Helm Repositories # flux get sources helm helm repo list 3. Test Component Deployments # # Check shared components kubectl get kustomizations -n flux-system | grep shared # Check HelmReleases kubectl get helmreleases -A # Verify pods are running kubectl get pods -n cert-manager kubectl get pods -n external-secrets kubectl get pods -n argo-workflows 4. Test Customizations # Verify that cluster-specific patches are working:">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="docs">
+<title>Testing Guide | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/testing/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="active">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Testing Guide</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#testing-guide">Testing Guide</a>
+      <ul>
+        <li><a href="#validation-script">Validation Script</a></li>
+        <li><a href="#manual-testing-steps">Manual Testing Steps</a>
+          <ul>
+            <li><a href="#1-check-git-sources">1. Check Git Sources</a></li>
+            <li><a href="#2-verify-helm-repositories">2. Verify Helm Repositories</a></li>
+            <li><a href="#3-test-component-deployments">3. Test Component Deployments</a></li>
+            <li><a href="#4-test-customizations">4. Test Customizations</a></li>
+            <li><a href="#5-monitor-reconciliation">5. Monitor Reconciliation</a></li>
+          </ul>
+        </li>
+        <li><a href="#integration-tests">Integration Tests</a></li>
+        <li><a href="#performance-testing">Performance Testing</a>
+          <ul>
+            <li><a href="#resource-usage">Resource Usage</a></li>
+            <li><a href="#reconciliation-performance">Reconciliation Performance</a></li>
+          </ul>
+        </li>
+        <li><a href="#troubleshooting-tests">Troubleshooting Tests</a>
+          <ul>
+            <li><a href="#dependency-failures">Dependency Failures</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="testing-guide">
+  Testing Guide
+  <a class="anchor" href="#testing-guide">#</a>
+</h1>
+<p>This guide provides instructions for testing the flux-shared-platform migration and components.</p>
+<h2 id="validation-script">
+  Validation Script
+  <a class="anchor" href="#validation-script">#</a>
+</h2>
+<p>Use the provided validation script to check migration status:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./scripts/validate-migration.sh
+</span></span></code></pre></div><p>This script will:</p>
+<ul>
+<li>Check that GitRepository sources are ready</li>
+<li>Verify Helm repositories are available</li>
+<li>Validate infrastructure components are deployed</li>
+<li>Review HelmRelease status across namespaces</li>
+<li>Show recent Flux events</li>
+</ul>
+<h2 id="manual-testing-steps">
+  Manual Testing Steps
+  <a class="anchor" href="#manual-testing-steps">#</a>
+</h2>
+<h3 id="1-check-git-sources">
+  1. Check Git Sources
+  <a class="anchor" href="#1-check-git-sources">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>flux get sources git
+</span></span><span style="display:flex;"><span>kubectl get gitrepository flux-shared-platform -n flux-system -o yaml
+</span></span></code></pre></div><h3 id="2-verify-helm-repositories">
+  2. Verify Helm Repositories
+  <a class="anchor" href="#2-verify-helm-repositories">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>flux get sources helm
+</span></span><span style="display:flex;"><span>helm repo list
+</span></span></code></pre></div><h3 id="3-test-component-deployments">
+  3. Test Component Deployments
+  <a class="anchor" href="#3-test-component-deployments">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Check shared components</span>
+</span></span><span style="display:flex;"><span>kubectl get kustomizations -n flux-system | grep shared
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Check HelmReleases</span>
+</span></span><span style="display:flex;"><span>kubectl get helmreleases -A
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Verify pods are running</span>
+</span></span><span style="display:flex;"><span>kubectl get pods -n cert-manager
+</span></span><span style="display:flex;"><span>kubectl get pods -n external-secrets
+</span></span><span style="display:flex;"><span>kubectl get pods -n argo-workflows
+</span></span></code></pre></div><h3 id="4-test-customizations">
+  4. Test Customizations
+  <a class="anchor" href="#4-test-customizations">#</a>
+</h3>
+<p>Verify that cluster-specific patches are working:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># For argo-workflows, check workflowNamespaces</span>
+</span></span><span style="display:flex;"><span>kubectl get helmrelease argo-workflows -n argo-workflows -o jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;{.spec.values.controller.workflowNamespaces}&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># For cert-manager, check custom values</span>
+</span></span><span style="display:flex;"><span>kubectl get helmrelease cert-manager -n cert-manager -o yaml
+</span></span></code></pre></div><h3 id="5-monitor-reconciliation">
+  5. Monitor Reconciliation
+  <a class="anchor" href="#5-monitor-reconciliation">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Watch reconciliation status</span>
+</span></span><span style="display:flex;"><span>flux get kustomizations --watch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Check for reconciliation errors</span>
+</span></span><span style="display:flex;"><span>flux logs --follow
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Specific component logs</span>
+</span></span><span style="display:flex;"><span>flux logs --kind<span style="color:#f92672">=</span>HelmRelease --name<span style="color:#f92672">=</span>cert-manager
+</span></span></code></pre></div><h2 id="integration-tests">
+  Integration Tests
+  <a class="anchor" href="#integration-tests">#</a>
+</h2>
+<p>Create test resources to verify functionality:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># Test cert-manager with a test certificate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cert-manager.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Certificate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">test-cert</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">test-cert-tls</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">issuerRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">selfsigned-issuer</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ClusterIssuer</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dnsNames</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">test.example.com</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Test argo-workflows with a simple workflow</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">argoproj.io/v1alpha1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Workflow</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">generateName</span>: <span style="color:#ae81ff">test-workflow-</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argo-workflows</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">entrypoint</span>: <span style="color:#ae81ff">hello</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">templates</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">hello</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">container</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">image</span>: <span style="color:#ae81ff">alpine:latest</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">command</span>: [<span style="color:#ae81ff">echo, &#34;Hello from shared platform!&#34;]</span>
+</span></span></code></pre></div><h2 id="performance-testing">
+  Performance Testing
+  <a class="anchor" href="#performance-testing">#</a>
+</h2>
+<h3 id="resource-usage">
+  Resource Usage
+  <a class="anchor" href="#resource-usage">#</a>
+</h3>
+<p>Monitor resource consumption after migration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Check resource usage by namespace</span>
+</span></span><span style="display:flex;"><span>kubectl top pods -A | grep -E <span style="color:#e6db74">&#34;(cert-manager|external-secrets|argo-workflows)&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Check memory and CPU limits</span>
+</span></span><span style="display:flex;"><span>kubectl describe pods -n cert-manager
+</span></span></code></pre></div><h3 id="reconciliation-performance">
+  Reconciliation Performance
+  <a class="anchor" href="#reconciliation-performance">#</a>
+</h3>
+<p>Monitor Flux reconciliation times:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Check reconciliation duration</span>
+</span></span><span style="display:flex;"><span>flux get kustomizations | grep -E <span style="color:#e6db74">&#34;(shared|cert-manager|external-secrets|argo-workflows)&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Monitor for reconciliation delays</span>
+</span></span><span style="display:flex;"><span>kubectl get events -n flux-system | grep -i <span style="color:#e6db74">&#34;reconcil&#34;</span>
+</span></span></code></pre></div><h2 id="troubleshooting-tests">
+  Troubleshooting Tests
+  <a class="anchor" href="#troubleshooting-tests">#</a>
+</h2>
+<h3 id="dependency-failures">
+  Dependency Failures
+  <a class="anchor" href="#dependency-failures">#</a>
+</h3>
+<p>Simulate dependency failures:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Suspend helm repositories</span>
+</span></span><span style="display:flex;"><span>flux suspend source helm jetstack
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Observe impact on dependent components</span>
+</span></span><span style="display:flex;"><span>flux get kustomizations | grep cert-manager
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Resume and verify recovery</span>
+</span></span><span style="display:flex;"><span>flux resume source helm jetstack
+</span></span></code></pre></div><p>For complete testing procedures including load testing, rollback testing, and continuous testing setup, refer to the full testing documentation in the repository.</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/flux-shared-platform/docs/migration/" class="flex align-center book-icon">
+        <img src="/flux-shared-platform/svg/backward.svg" class="book-icon" alt="Previous" title="Migration Guide" />
+        <span>Migration Guide</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/flux-shared-platform/docs/contributing/" class="flex align-center book-icon">
+        <span>Contributing Guide</span>
+        <img src="/flux-shared-platform/svg/forward.svg" class="book-icon" alt="Next" title="Contributing Guide" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#testing-guide">Testing Guide</a>
+      <ul>
+        <li><a href="#validation-script">Validation Script</a></li>
+        <li><a href="#manual-testing-steps">Manual Testing Steps</a>
+          <ul>
+            <li><a href="#1-check-git-sources">1. Check Git Sources</a></li>
+            <li><a href="#2-verify-helm-repositories">2. Verify Helm Repositories</a></li>
+            <li><a href="#3-test-component-deployments">3. Test Component Deployments</a></li>
+            <li><a href="#4-test-customizations">4. Test Customizations</a></li>
+            <li><a href="#5-monitor-reconciliation">5. Monitor Reconciliation</a></li>
+          </ul>
+        </li>
+        <li><a href="#integration-tests">Integration Tests</a></li>
+        <li><a href="#performance-testing">Performance Testing</a>
+          <ul>
+            <li><a href="#resource-usage">Resource Usage</a></li>
+            <li><a href="#reconciliation-performance">Reconciliation Performance</a></li>
+          </ul>
+        </li>
+        <li><a href="#troubleshooting-tests">Troubleshooting Tests</a>
+          <ul>
+            <li><a href="#dependency-failures">Dependency Failures</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

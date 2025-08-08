@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Quick Start Guide
+  #
+
+Get up and running with Flux Shared Platform in minutes.
+
+  Prerequisites
+  #
+
+
+Kubernetes cluster with Flux CD installed
+kubectl and flux CLI tools configured
+Git repository for your cluster configuration
+
+
+  Step 1: Add the Shared Platform Source
+  #
+
+Add the flux-shared-platform repository as a GitRepository source:
+# clusters/shared-platform-source.yaml
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-shared-platform
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    branch: main
+  url: https://github.com/rossigee/flux-shared-platform
+Apply it to your cluster:">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/quick-start/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Quick Start">
+  <meta property="og:description" content="Quick Start Guide # Get up and running with Flux Shared Platform in minutes.
+Prerequisites # Kubernetes cluster with Flux CD installed kubectl and flux CLI tools configured Git repository for your cluster configuration Step 1: Add the Shared Platform Source # Add the flux-shared-platform repository as a GitRepository source:
+# clusters/shared-platform-source.yaml apiVersion: source.toolkit.fluxcd.io/v1 kind: GitRepository metadata: name: flux-shared-platform namespace: flux-system spec: interval: 10m ref: branch: main url: https://github.com/rossigee/flux-shared-platform Apply it to your cluster:">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="docs">
+<title>Quick Start | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/quick-start/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="active">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Quick Start</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#quick-start-guide">Quick Start Guide</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#step-1-add-the-shared-platform-source">Step 1: Add the Shared Platform Source</a></li>
+        <li><a href="#step-2-deploy-helm-repositories">Step 2: Deploy Helm Repositories</a></li>
+        <li><a href="#step-3-deploy-your-first-component">Step 3: Deploy Your First Component</a></li>
+        <li><a href="#step-4-verify-deployment">Step 4: Verify Deployment</a></li>
+        <li><a href="#step-5-customize-optional">Step 5: Customize (Optional)</a></li>
+        <li><a href="#next-steps">Next Steps</a></li>
+        <li><a href="#common-next-components">Common Next Components</a></li>
+        <li><a href="#need-help">Need Help?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="quick-start-guide">
+  Quick Start Guide
+  <a class="anchor" href="#quick-start-guide">#</a>
+</h1>
+<p>Get up and running with Flux Shared Platform in minutes.</p>
+<h2 id="prerequisites">
+  Prerequisites
+  <a class="anchor" href="#prerequisites">#</a>
+</h2>
+<ul>
+<li>Kubernetes cluster with Flux CD installed</li>
+<li><code>kubectl</code> and <code>flux</code> CLI tools configured</li>
+<li>Git repository for your cluster configuration</li>
+</ul>
+<h2 id="step-1-add-the-shared-platform-source">
+  Step 1: Add the Shared Platform Source
+  <a class="anchor" href="#step-1-add-the-shared-platform-source">#</a>
+</h2>
+<p>Add the flux-shared-platform repository as a GitRepository source:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># clusters/shared-platform-source.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">source.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">10m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ref</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">branch</span>: <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://github.com/rossigee/flux-shared-platform</span>
+</span></span></code></pre></div><p>Apply it to your cluster:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl apply -f clusters/shared-platform-source.yaml
+</span></span></code></pre></div><h2 id="step-2-deploy-helm-repositories">
+  Step 2: Deploy Helm Repositories
+  <a class="anchor" href="#step-2-deploy-helm-repositories">#</a>
+</h2>
+<p>First, deploy the shared Helm repositories:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># clusters/helm-repos.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">shared-helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl apply -f clusters/helm-repos.yaml
+</span></span></code></pre></div><h2 id="step-3-deploy-your-first-component">
+  Step 3: Deploy Your First Component
+  <a class="anchor" href="#step-3-deploy-your-first-component">#</a>
+</h2>
+<p>Let&rsquo;s deploy cert-manager as an example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># clusters/cert-manager.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">shared-helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">healthChecks</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl apply -f clusters/cert-manager.yaml
+</span></span></code></pre></div><h2 id="step-4-verify-deployment">
+  Step 4: Verify Deployment
+  <a class="anchor" href="#step-4-verify-deployment">#</a>
+</h2>
+<p>Check that everything is working:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Check Flux sources</span>
+</span></span><span style="display:flex;"><span>flux get sources git
+</span></span><span style="display:flex;"><span>flux get sources helm
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Check kustomizations</span>
+</span></span><span style="display:flex;"><span>flux get kustomizations
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Verify cert-manager pods</span>
+</span></span><span style="display:flex;"><span>kubectl get pods -n cert-manager
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Check cert-manager is ready</span>
+</span></span><span style="display:flex;"><span>kubectl get deployment cert-manager -n cert-manager
+</span></span></code></pre></div><h2 id="step-5-customize-optional">
+  Step 5: Customize (Optional)
+  <a class="anchor" href="#step-5-customize-optional">#</a>
+</h2>
+<p>If you need to customize cert-manager for your environment, use Kustomize patches:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># clusters/cert-manager-custom.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager-custom</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">shared-helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">patches</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">patch</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - op: replace
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          path: /spec/values/installCRDs
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          value: true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - op: add
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          path: /spec/values/resources
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          value:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            requests:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              cpu: 100m
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              memory: 128Mi
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            limits:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              cpu: 200m
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              memory: 256Mi</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">target</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">HelmRelease</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span></code></pre></div><h2 id="next-steps">
+  Next Steps
+  <a class="anchor" href="#next-steps">#</a>
+</h2>
+<p>Now you&rsquo;re ready to:</p>
+<ol>
+<li><strong>Explore more components</strong> - Check out external-secrets, argo-workflows, and monitoring components</li>
+<li><strong>Read the 
+  <a href="/flux-shared-platform/docs/usage/">Usage Guide</a></strong> - Learn about best practices and advanced configurations</li>
+<li><strong>Follow the 
+  <a href="/flux-shared-platform/docs/migration/">Migration Guide</a></strong> - Migrate existing infrastructure to shared components</li>
+<li><strong>Set up testing</strong> - Use our 
+  <a href="/flux-shared-platform/docs/testing/">Testing Guide</a> to validate your deployments</li>
+</ol>
+<h2 id="common-next-components">
+  Common Next Components
+  <a class="anchor" href="#common-next-components">#</a>
+</h2>
+<ul>
+<li><strong>external-secrets</strong> - For secret management with HashiCorp Vault</li>
+<li><strong>argo-workflows</strong> - For CI/CD and automation workflows</li>
+<li><strong>prometheus-operator</strong> - For monitoring and alerting</li>
+<li><strong>kyverno</strong> - For policy enforcement and governance</li>
+</ul>
+<h2 id="need-help">
+  Need Help?
+  <a class="anchor" href="#need-help">#</a>
+</h2>
+<ul>
+<li>Check the 
+  <a href="/flux-shared-platform/docs/testing/#troubleshooting-tests">Troubleshooting section</a> in our Testing Guide</li>
+<li>Review our 
+  <a href="/flux-shared-platform/docs/usage/#best-practices">Best Practices</a></li>
+<li>Open an issue in the 
+  <a href="https://github.com/rossigee/flux-shared-platform/issues">GitHub repository</a></li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+    </span>
+    <span>
+    
+      <a href="/flux-shared-platform/docs/usage/" class="flex align-center book-icon">
+        <span>Usage Guide</span>
+        <img src="/flux-shared-platform/svg/forward.svg" class="book-icon" alt="Next" title="Usage Guide" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#quick-start-guide">Quick Start Guide</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#step-1-add-the-shared-platform-source">Step 1: Add the Shared Platform Source</a></li>
+        <li><a href="#step-2-deploy-helm-repositories">Step 2: Deploy Helm Repositories</a></li>
+        <li><a href="#step-3-deploy-your-first-component">Step 3: Deploy Your First Component</a></li>
+        <li><a href="#step-4-verify-deployment">Step 4: Verify Deployment</a></li>
+        <li><a href="#step-5-customize-optional">Step 5: Customize (Optional)</a></li>
+        <li><a href="#next-steps">Next Steps</a></li>
+        <li><a href="#common-next-components">Common Next Components</a></li>
+        <li><a href="#need-help">Need Help?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

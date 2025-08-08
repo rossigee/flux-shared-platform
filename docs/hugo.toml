@@ -1,0 +1,68 @@
+baseURL = 'https://rossigee.github.io/flux-shared-platform'
+languageCode = 'en-us'
+title = 'Flux Shared Platform Documentation'
+description = 'Reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD'
+theme = 'hugo-book'
+
+# SEO and metadata
+[params.seo]
+  title = 'Flux Shared Platform - Reusable GitOps Components'
+  description = 'A comprehensive library of reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD. Includes cert-manager, external-secrets, argo-workflows, monitoring, and security components.'
+  keywords = ['kubernetes', 'gitops', 'flux', 'infrastructure', 'manifests', 'templates', 'cert-manager', 'external-secrets', 'argo-workflows']
+  author = 'Ross Geerlings'
+
+# Book configuration
+disablePathToLower = true
+enableGitInfo = true
+
+# Needed for mermaid/katex shortcodes
+[markup]
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.tableOfContents]
+  startLevel = 1
+
+# Multi-lingual mode config
+[languages]
+[languages.en]
+  languageName = 'English'
+  contentDir = 'content'
+  weight = 1
+
+[menu]
+[[menu.after]]
+  name = "Github"
+  url = "https://github.com/rossigee/flux-shared-platform"
+  weight = 10
+
+[params]
+  # Sets color theme: light, dark or auto
+  BookTheme = 'light'
+
+  # Controls table of contents visibility on right side of pages
+  BookToC = true
+
+  # Specify root page to render child pages as menu
+  BookSection = 'docs'
+
+  # Set source repository location for 'Last Modified' and 'Edit this page' links
+  BookRepo = 'https://github.com/rossigee/flux-shared-platform'
+
+  # Enable "Edit this page" links
+  BookEditPage = true
+
+  # Configure the date format
+  BookDateFormat = 'January 2, 2006'
+
+  # Enables search function
+  BookSearch = true
+
+  # Disable comments
+  BookComments = false
+
+  # Enable portable links
+  BookPortableLinks = true
+
+  # Enable service worker for offline use
+  BookServiceWorker = true

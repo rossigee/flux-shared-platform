@@ -1,0 +1,15 @@
+{
+  "name": "Flux Shared Platform Documentation",
+  "short_name": "Flux Shared Platform Documentation",
+  "start_url": "/flux-shared-platform/",
+  "scope": "/flux-shared-platform/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/flux-shared-platform/favicon.svg",
+      "sizes": "512x512"
+    }
+  ]
+}

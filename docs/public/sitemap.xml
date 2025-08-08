@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/quick-start/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/usage/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/migration/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/testing/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/contributing/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/components/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/docs/examples/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/categories/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/</loc>
+  </url><url>
+    <loc>http://localhost:1313/flux-shared-platform/tags/</loc>
+  </url>
+</urlset>

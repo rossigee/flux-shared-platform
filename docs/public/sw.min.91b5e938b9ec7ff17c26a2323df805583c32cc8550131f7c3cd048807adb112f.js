@@ -1,0 +1,1 @@
+navigator.serviceWorker&&navigator.serviceWorker.register("/flux-shared-platform/sw.js",{scope:"/flux-shared-platform/"})

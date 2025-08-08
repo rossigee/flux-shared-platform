@@ -9,6 +9,7 @@ resources:
   - cronjob.yaml
   - deployment.yaml
   - prometheus-rules.yaml
+  # - daemonset.yaml  # Optional: Uncomment for node-level LVM monitoring
 
 images:
   - name: harbor.golder.lan/library/lvm-metrics-exporter

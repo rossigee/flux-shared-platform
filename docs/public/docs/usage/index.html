@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Usage Guide
+  #
+
+
+  Getting Started
+  #
+
+
+  1. Add as Git Source
+  #
+
+First, add the shared platform repository as a GitRepository source in your Flux configuration:
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-shared-platform
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    branch: main
+  url: https://github.com/rossigee/flux-shared-platform
+
+  2. Use Shared Infrastructure Components
+  #
+
+Reference shared infrastructure components in your Kustomizations:
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  interval: 30m
+  path: ./infrastructure/cert-manager
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: cert-manager
+
+  3. Customize with Patches
+  #
+
+Use Kustomize patches to customize shared components for your cluster:">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/usage/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Usage Guide">
+  <meta property="og:description" content="Usage Guide # Getting Started # 1. Add as Git Source # First, add the shared platform repository as a GitRepository source in your Flux configuration:
+apiVersion: source.toolkit.fluxcd.io/v1 kind: GitRepository metadata: name: flux-shared-platform namespace: flux-system spec: interval: 10m ref: branch: main url: https://github.com/rossigee/flux-shared-platform 2. Use Shared Infrastructure Components # Reference shared infrastructure components in your Kustomizations:
+apiVersion: kustomize.toolkit.fluxcd.io/v1 kind: Kustomization metadata: name: cert-manager namespace: flux-system spec: interval: 30m path: ./infrastructure/cert-manager sourceRef: kind: GitRepository name: flux-shared-platform targetNamespace: cert-manager 3. Customize with Patches # Use Kustomize patches to customize shared components for your cluster:">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="docs">
+<title>Usage Guide | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/usage/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="active">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Usage Guide</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#usage-guide">Usage Guide</a>
+      <ul>
+        <li><a href="#getting-started">Getting Started</a>
+          <ul>
+            <li><a href="#1-add-as-git-source">1. Add as Git Source</a></li>
+            <li><a href="#2-use-shared-infrastructure-components">2. Use Shared Infrastructure Components</a></li>
+            <li><a href="#3-customize-with-patches">3. Customize with Patches</a></li>
+          </ul>
+        </li>
+        <li><a href="#available-components">Available Components</a>
+          <ul>
+            <li><a href="#infrastructure-components">Infrastructure Components</a></li>
+            <li><a href="#templates">Templates</a></li>
+          </ul>
+        </li>
+        <li><a href="#best-practices">Best Practices</a>
+          <ul>
+            <li><a href="#security">Security</a></li>
+            <li><a href="#customization">Customization</a></li>
+            <li><a href="#monitoring">Monitoring</a></li>
+          </ul>
+        </li>
+        <li><a href="#examples">Examples</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="usage-guide">
+  Usage Guide
+  <a class="anchor" href="#usage-guide">#</a>
+</h1>
+<h2 id="getting-started">
+  Getting Started
+  <a class="anchor" href="#getting-started">#</a>
+</h2>
+<h3 id="1-add-as-git-source">
+  1. Add as Git Source
+  <a class="anchor" href="#1-add-as-git-source">#</a>
+</h3>
+<p>First, add the shared platform repository as a GitRepository source in your Flux configuration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">source.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">10m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ref</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">branch</span>: <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://github.com/rossigee/flux-shared-platform</span>
+</span></span></code></pre></div><h3 id="2-use-shared-infrastructure-components">
+  2. Use Shared Infrastructure Components
+  <a class="anchor" href="#2-use-shared-infrastructure-components">#</a>
+</h3>
+<p>Reference shared infrastructure components in your Kustomizations:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span></code></pre></div><h3 id="3-customize-with-patches">
+  3. Customize with Patches
+  <a class="anchor" href="#3-customize-with-patches">#</a>
+</h3>
+<p>Use Kustomize patches to customize shared components for your cluster:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-workflows</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># ... other fields ...</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">patches</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">patch</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - op: replace
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          path: /spec/values/controller/workflowNamespaces
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          value: [&#34;production&#34;, &#34;staging&#34;]</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">target</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">HelmRelease</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-workflows</span>
+</span></span></code></pre></div><h2 id="available-components">
+  Available Components
+  <a class="anchor" href="#available-components">#</a>
+</h2>
+<h3 id="infrastructure-components">
+  Infrastructure Components
+  <a class="anchor" href="#infrastructure-components">#</a>
+</h3>
+<ul>
+<li><strong>cert-manager</strong>: Certificate management</li>
+<li><strong>external-secrets</strong>: External secrets operator</li>
+<li><strong>argo-workflows</strong>: Workflow engine</li>
+</ul>
+<h3 id="templates">
+  Templates
+  <a class="anchor" href="#templates">#</a>
+</h3>
+<ul>
+<li><strong>automation/</strong>: Image update automation and Discord notifications</li>
+<li><strong>kustomization/</strong>: Common kustomization patterns</li>
+<li><strong>monitoring/</strong>: Prometheus rules and scrape configs</li>
+<li><strong>rbac/</strong>: RBAC templates for SSO and service accounts</li>
+<li><strong>networking/</strong>: Ingress and NetworkPolicy templates</li>
+</ul>
+<h2 id="best-practices">
+  Best Practices
+  <a class="anchor" href="#best-practices">#</a>
+</h2>
+<h3 id="security">
+  Security
+  <a class="anchor" href="#security">#</a>
+</h3>
+<ol>
+<li>Never include secrets in shared configurations</li>
+<li>Use External Secrets or sealed secrets for sensitive data</li>
+<li>Review all templates before applying to production</li>
+<li>Use least-privilege RBAC configurations</li>
+</ol>
+<h3 id="customization">
+  Customization
+  <a class="anchor" href="#customization">#</a>
+</h3>
+<ol>
+<li>Use Kustomize patches instead of forking shared components</li>
+<li>Keep cluster-specific configurations in your private repository</li>
+<li>Version pin shared components for stability</li>
+<li>Test changes in staging environments first</li>
+</ol>
+<h3 id="monitoring">
+  Monitoring
+  <a class="anchor" href="#monitoring">#</a>
+</h3>
+<ol>
+<li>Customize monitoring templates for your environment</li>
+<li>Add cluster-specific alerting rules</li>
+<li>Configure notification channels appropriately</li>
+<li>Monitor resource usage and scaling</li>
+</ol>
+<h2 id="examples">
+  Examples
+  <a class="anchor" href="#examples">#</a>
+</h2>
+<p>See the <code>examples/</code> directory for:</p>
+<ul>
+<li>Complete cluster configurations</li>
+<li>Component usage patterns</li>
+<li>Customization examples</li>
+<li>Integration patterns</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/flux-shared-platform/docs/quick-start/" class="flex align-center book-icon">
+        <img src="/flux-shared-platform/svg/backward.svg" class="book-icon" alt="Previous" title="Quick Start" />
+        <span>Quick Start</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/flux-shared-platform/docs/migration/" class="flex align-center book-icon">
+        <span>Migration Guide</span>
+        <img src="/flux-shared-platform/svg/forward.svg" class="book-icon" alt="Next" title="Migration Guide" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#usage-guide">Usage Guide</a>
+      <ul>
+        <li><a href="#getting-started">Getting Started</a>
+          <ul>
+            <li><a href="#1-add-as-git-source">1. Add as Git Source</a></li>
+            <li><a href="#2-use-shared-infrastructure-components">2. Use Shared Infrastructure Components</a></li>
+            <li><a href="#3-customize-with-patches">3. Customize with Patches</a></li>
+          </ul>
+        </li>
+        <li><a href="#available-components">Available Components</a>
+          <ul>
+            <li><a href="#infrastructure-components">Infrastructure Components</a></li>
+            <li><a href="#templates">Templates</a></li>
+          </ul>
+        </li>
+        <li><a href="#best-practices">Best Practices</a>
+          <ul>
+            <li><a href="#security">Security</a></li>
+            <li><a href="#customization">Customization</a></li>
+            <li><a href="#monitoring">Monitoring</a></li>
+          </ul>
+        </li>
+        <li><a href="#examples">Examples</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Migration Guide
+  #
+
+This guide helps you migrate from duplicated infrastructure manifests to the shared platform components.
+
+  Prerequisites
+  #
+
+
+Existing Flux CD installation
+Access to modify cluster GitOps repositories
+Understanding of Kustomize patches
+
+
+  Migration Steps
+  #
+
+
+  1. Add Shared Platform Source
+  #
+
+Add the shared platform as a GitRepository source:
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-shared-platform
+  namespace: flux-system
+spec:
+  interval: 20m
+  ref:
+    branch: main
+  url: https://github.com/rossigee/flux-shared-platform
+
+  2. Deploy Helm Repositories First
+  #
+
+Deploy shared helm repositories before infrastructure components:">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/migration/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Migration Guide">
+  <meta property="og:description" content="Migration Guide # This guide helps you migrate from duplicated infrastructure manifests to the shared platform components.
+Prerequisites # Existing Flux CD installation Access to modify cluster GitOps repositories Understanding of Kustomize patches Migration Steps # 1. Add Shared Platform Source # Add the shared platform as a GitRepository source:
+apiVersion: source.toolkit.fluxcd.io/v1 kind: GitRepository metadata: name: flux-shared-platform namespace: flux-system spec: interval: 20m ref: branch: main url: https://github.com/rossigee/flux-shared-platform 2. Deploy Helm Repositories First # Deploy shared helm repositories before infrastructure components:">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="docs">
+<title>Migration Guide | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/migration/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="active">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Migration Guide</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#migration-guide">Migration Guide</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#migration-steps">Migration Steps</a>
+          <ul>
+            <li><a href="#1-add-shared-platform-source">1. Add Shared Platform Source</a></li>
+            <li><a href="#2-deploy-helm-repositories-first">2. Deploy Helm Repositories First</a></li>
+            <li><a href="#3-migrate-components-gradually">3. Migrate Components Gradually</a></li>
+            <li><a href="#4-update-cluster-specific-kustomizations">4. Update Cluster-Specific Kustomizations</a></li>
+            <li><a href="#5-update-dependencies">5. Update Dependencies</a></li>
+          </ul>
+        </li>
+        <li><a href="#component-specific-migration">Component-Specific Migration</a>
+          <ul>
+            <li><a href="#cert-manager">Cert-Manager</a></li>
+            <li><a href="#external-secrets">External-Secrets</a></li>
+            <li><a href="#argo-workflows">Argo Workflows</a></li>
+          </ul>
+        </li>
+        <li><a href="#testing-strategy">Testing Strategy</a></li>
+        <li><a href="#rollback-plan">Rollback Plan</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a>
+          <ul>
+            <li><a href="#common-issues">Common Issues</a></li>
+            <li><a href="#monitoring">Monitoring</a></li>
+          </ul>
+        </li>
+        <li><a href="#benefits-after-migration">Benefits After Migration</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="migration-guide">
+  Migration Guide
+  <a class="anchor" href="#migration-guide">#</a>
+</h1>
+<p>This guide helps you migrate from duplicated infrastructure manifests to the shared platform components.</p>
+<h2 id="prerequisites">
+  Prerequisites
+  <a class="anchor" href="#prerequisites">#</a>
+</h2>
+<ul>
+<li>Existing Flux CD installation</li>
+<li>Access to modify cluster GitOps repositories</li>
+<li>Understanding of Kustomize patches</li>
+</ul>
+<h2 id="migration-steps">
+  Migration Steps
+  <a class="anchor" href="#migration-steps">#</a>
+</h2>
+<h3 id="1-add-shared-platform-source">
+  1. Add Shared Platform Source
+  <a class="anchor" href="#1-add-shared-platform-source">#</a>
+</h3>
+<p>Add the shared platform as a GitRepository source:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">source.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">20m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ref</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">branch</span>: <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://github.com/rossigee/flux-shared-platform</span>
+</span></span></code></pre></div><h3 id="2-deploy-helm-repositories-first">
+  2. Deploy Helm Repositories First
+  <a class="anchor" href="#2-deploy-helm-repositories-first">#</a>
+</h3>
+<p>Deploy shared helm repositories before infrastructure components:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span></code></pre></div><h3 id="3-migrate-components-gradually">
+  3. Migrate Components Gradually
+  <a class="anchor" href="#3-migrate-components-gradually">#</a>
+</h3>
+<p>For each component, follow this pattern:</p>
+<h4 id="before-duplicated">
+  Before (Duplicated)
+  <a class="anchor" href="#before-duplicated">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./clusters/production/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">my-cluster-repo</span>
+</span></span></code></pre></div><h4 id="after-shared--override">
+  After (Shared + Override)
+  <a class="anchor" href="#after-shared--override">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># Deploy shared component</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager-shared</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Deploy cluster-specific overrides</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager-shared</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./clusters/production/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">my-cluster-repo</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span></code></pre></div><h3 id="4-update-cluster-specific-kustomizations">
+  4. Update Cluster-Specific Kustomizations
+  <a class="anchor" href="#4-update-cluster-specific-kustomizations">#</a>
+</h3>
+<p>Remove infrastructure references from cluster kustomizations:</p>
+<h4 id="before">
+  Before
+  <a class="anchor" href="#before">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.config.k8s.io/v1beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">../../../infrastructure/cert-manager </span> <span style="color:#75715e"># Remove this</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">automation.yaml</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">namespace.yaml</span>
+</span></span></code></pre></div><h4 id="after">
+  After
+  <a class="anchor" href="#after">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.config.k8s.io/v1beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">automation.yaml</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">namespace.yaml</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Shared component deployed via cert-manager-shared kustomization</span>
+</span></span></code></pre></div><h3 id="5-update-dependencies">
+  5. Update Dependencies
+  <a class="anchor" href="#5-update-dependencies">#</a>
+</h3>
+<p>Update all component dependencies to reference shared versions:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># Change from:</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># To:</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager-shared</span>
+</span></span></code></pre></div><h2 id="component-specific-migration">
+  Component-Specific Migration
+  <a class="anchor" href="#component-specific-migration">#</a>
+</h2>
+<h3 id="cert-manager">
+  Cert-Manager
+  <a class="anchor" href="#cert-manager">#</a>
+</h3>
+<ul>
+<li>No customization typically needed</li>
+<li>Keep cluster-specific automation and namespaces</li>
+</ul>
+<h3 id="external-secrets">
+  External-Secrets
+  <a class="anchor" href="#external-secrets">#</a>
+</h3>
+<ul>
+<li>Update chart version references</li>
+<li>Maintain cluster-specific CA certificates and secrets</li>
+</ul>
+<h3 id="argo-workflows">
+  Argo Workflows
+  <a class="anchor" href="#argo-workflows">#</a>
+</h3>
+<ul>
+<li>Customize <code>workflowNamespaces</code> using patches:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">patches</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">patch</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      - op: replace
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        path: /spec/values/controller/workflowNamespaces
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        value: [&#34;production&#34;, &#34;staging&#34;]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">target</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">HelmRelease</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-workflows</span>
+</span></span></code></pre></div><h2 id="testing-strategy">
+  Testing Strategy
+  <a class="anchor" href="#testing-strategy">#</a>
+</h2>
+<ol>
+<li><strong>Start with staging environments</strong></li>
+<li><strong>Deploy one component at a time</strong></li>
+<li><strong>Verify functionality before proceeding</strong></li>
+<li><strong>Monitor for reconciliation errors</strong></li>
+<li><strong>Test cluster-specific customizations</strong></li>
+</ol>
+<h2 id="rollback-plan">
+  Rollback Plan
+  <a class="anchor" href="#rollback-plan">#</a>
+</h2>
+<p>If issues occur, you can quickly rollback by:</p>
+<ol>
+<li>Suspending shared component kustomizations</li>
+<li>Re-enabling original infrastructure references</li>
+<li>Removing shared platform GitRepository source</li>
+</ol>
+<h2 id="troubleshooting">
+  Troubleshooting
+  <a class="anchor" href="#troubleshooting">#</a>
+</h2>
+<h3 id="common-issues">
+  Common Issues
+  <a class="anchor" href="#common-issues">#</a>
+</h3>
+<p><strong>Reconciliation Loops</strong></p>
+<ul>
+<li>Ensure old infrastructure references are removed</li>
+<li>Check for conflicting resource ownership</li>
+</ul>
+<p><strong>Missing Dependencies</strong></p>
+<ul>
+<li>Verify helm repositories are deployed first</li>
+<li>Check dependency chains in kustomizations</li>
+</ul>
+<p><strong>Version Conflicts</strong></p>
+<ul>
+<li>Update shared platform to match your current versions</li>
+<li>Use patches to override specific values</li>
+</ul>
+<h3 id="monitoring">
+  Monitoring
+  <a class="anchor" href="#monitoring">#</a>
+</h3>
+<p>Watch Flux reconciliation status:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>flux get kustomizations
+</span></span><span style="display:flex;"><span>flux get helmreleases
+</span></span><span style="display:flex;"><span>flux logs --follow
+</span></span></code></pre></div><h2 id="benefits-after-migration">
+  Benefits After Migration
+  <a class="anchor" href="#benefits-after-migration">#</a>
+</h2>
+<ul>
+<li><strong>Reduced Duplication</strong>: ~60-70% fewer manifests to maintain</li>
+<li><strong>Consistency</strong>: Shared components ensure uniform configurations</li>
+<li><strong>Updates</strong>: Centralized component version management</li>
+<li><strong>Community</strong>: Contribute and benefit from shared improvements</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/flux-shared-platform/docs/usage/" class="flex align-center book-icon">
+        <img src="/flux-shared-platform/svg/backward.svg" class="book-icon" alt="Previous" title="Usage Guide" />
+        <span>Usage Guide</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/flux-shared-platform/docs/testing/" class="flex align-center book-icon">
+        <span>Testing Guide</span>
+        <img src="/flux-shared-platform/svg/forward.svg" class="book-icon" alt="Next" title="Testing Guide" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#migration-guide">Migration Guide</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#migration-steps">Migration Steps</a>
+          <ul>
+            <li><a href="#1-add-shared-platform-source">1. Add Shared Platform Source</a></li>
+            <li><a href="#2-deploy-helm-repositories-first">2. Deploy Helm Repositories First</a></li>
+            <li><a href="#3-migrate-components-gradually">3. Migrate Components Gradually</a></li>
+            <li><a href="#4-update-cluster-specific-kustomizations">4. Update Cluster-Specific Kustomizations</a></li>
+            <li><a href="#5-update-dependencies">5. Update Dependencies</a></li>
+          </ul>
+        </li>
+        <li><a href="#component-specific-migration">Component-Specific Migration</a>
+          <ul>
+            <li><a href="#cert-manager">Cert-Manager</a></li>
+            <li><a href="#external-secrets">External-Secrets</a></li>
+            <li><a href="#argo-workflows">Argo Workflows</a></li>
+          </ul>
+        </li>
+        <li><a href="#testing-strategy">Testing Strategy</a></li>
+        <li><a href="#rollback-plan">Rollback Plan</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a>
+          <ul>
+            <li><a href="#common-issues">Common Issues</a></li>
+            <li><a href="#monitoring">Monitoring</a></li>
+          </ul>
+        </li>
+        <li><a href="#benefits-after-migration">Benefits After Migration</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head><script src="/flux-shared-platform/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=flux-shared-platform/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Component Reference
+  #
+
+This section provides detailed information about all available infrastructure components in the shared platform.
+
+  Core Infrastructure Components
+  #
+
+
+  Certificate Management
+  #
+
+
+  cert-manager
+  #
+
+
+Path: ./infrastructure/cert-manager
+Purpose: Automated certificate lifecycle management
+Dependencies: jetstack helm repository
+Customization: Minimal configuration needed for most use cases
+
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  path: ./infrastructure/cert-manager
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: cert-manager
+
+  trust-manager (included with cert-manager)
+  #
+
+
+Purpose: CA bundle distribution and trust chain management
+Integration: Automatically deployed with cert-manager
+Use case: Distribute internal CA certificates across the cluster
+
+
+  Secrets Management
+  #
+
+
+  external-secrets
+  #
+
+
+Path: ./infrastructure/external-secrets
+Purpose: Kubernetes-native secret synchronization
+Integration: Works with HashiCorp Vault, AWS Secrets Manager, Azure Key Vault
+Dependencies: external-secrets helm repository
+
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  path: ./infrastructure/external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  targetNamespace: external-secrets
+
+  Workflow Orchestration
+  #
+
+
+  argo-workflows
+  #
+
+
+Path: ./infrastructure/argo-workflows
+Purpose: Kubernetes-native workflow engine
+Use cases: CI/CD pipelines, data processing, backup automation
+Dependencies: argoproj helm repository
+Common customization: workflowNamespaces configuration
+
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: argo-workflows
+  namespace: flux-system
+spec:
+  path: ./infrastructure/argo-workflows
+  sourceRef:
+    kind: GitRepository
+    name: flux-shared-platform
+  patches:
+    - patch: |
+        - op: replace
+          path: /spec/values/controller/workflowNamespaces
+          value: [&#34;production&#34;, &#34;staging&#34;, &#34;default&#34;]
+      target:
+        kind: HelmRelease
+        name: argo-workflows
+
+  Monitoring Stack
+  #
+
+
+  prometheus-operator
+  #
+
+
+Path: ./infrastructure/prometheus-operator
+Purpose: Metrics collection and alerting infrastructure
+Components: Prometheus, Grafana, AlertManager
+Dependencies: prometheus helm repository
+
+
+  kube-state-metrics
+  #
+
+
+Path: ./infrastructure/kube-state-metrics
+Purpose: Kubernetes cluster state metrics
+Integration: Works with prometheus-operator
+
+
+  Policy and Security
+  #
+
+
+  kyverno
+  #
+
+
+Path: ./infrastructure/kyverno
+Purpose: Policy enforcement and governance
+Use cases: Security policies, resource validation, mutation
+Dependencies: kyverno helm repository
+
+
+  kubescape
+  #
+
+
+Path: ./infrastructure/kubescape
+Purpose: Kubernetes security scanning and compliance
+Integration: Provides security insights and compliance reports
+
+
+  Networking
+  #
+
+
+  cilium
+  #
+
+
+Path: ./infrastructure/cilium
+Purpose: Advanced networking and security for Kubernetes
+Features: Network policies, service mesh, observability
+Dependencies: cilium helm repository
+
+
+  external-dns
+  #
+
+
+Path: ./infrastructure/external-dns
+Purpose: Automated DNS record management
+Integration: Works with cert-manager for automated certificate management
+
+
+  Storage
+  #
+
+
+  csi-driver-lvm
+  #
+
+
+Path: ./infrastructure/csi-driver-lvm
+Purpose: LVM-based persistent volume provisioning
+Use case: High-performance local storage
+
+
+  Application Management
+  #
+
+
+  argocd
+  #
+
+
+Path: ./infrastructure/argocd
+Purpose: GitOps application deployment and management
+Separation: Complements Flux CD for application-specific deployments
+
+
+  Templates and Patterns
+  #
+
+
+  Automation Templates
+  #
+
+
+Path: ./templates/automation/
+Components: Discord notifications, image update automation, webhook receivers
+Use case: Extend Flux CD with custom automation workflows
+
+
+  Monitoring Templates
+  #
+
+
+Path: ./templates/monitoring/
+Components: Prometheus rules, scrape configs, alert definitions
+Categories: Infrastructure, application, security, and network monitoring
+
+
+  RBAC Templates
+  #
+
+
+Path: ./templates/rbac/
+Components: Service accounts, role definitions, SSO integration
+Use case: Standardized permission patterns
+
+
+  Networking Templates
+  #
+
+
+Path: ./templates/networking/
+Components: Ingress patterns, network policies, service definitions
+Use case: Secure networking configurations
+
+
+  Helm Repositories
+  #
+
+The shared platform includes definitions for common Helm repositories:">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="http://localhost:1313/flux-shared-platform/docs/components/">
+  <meta property="og:site_name" content="Flux Shared Platform Documentation">
+  <meta property="og:title" content="Component Reference">
+  <meta property="og:description" content="Component Reference # This section provides detailed information about all available infrastructure components in the shared platform.
+Core Infrastructure Components # Certificate Management # cert-manager # Path: ./infrastructure/cert-manager Purpose: Automated certificate lifecycle management Dependencies: jetstack helm repository Customization: Minimal configuration needed for most use cases apiVersion: kustomize.toolkit.fluxcd.io/v1 kind: Kustomization metadata: name: cert-manager namespace: flux-system spec: path: ./infrastructure/cert-manager sourceRef: kind: GitRepository name: flux-shared-platform targetNamespace: cert-manager trust-manager (included with cert-manager) # Purpose: CA bundle distribution and trust chain management Integration: Automatically deployed with cert-manager Use case: Distribute internal CA certificates across the cluster Secrets Management # external-secrets # Path: ./infrastructure/external-secrets Purpose: Kubernetes-native secret synchronization Integration: Works with HashiCorp Vault, AWS Secrets Manager, Azure Key Vault Dependencies: external-secrets helm repository apiVersion: kustomize.toolkit.fluxcd.io/v1 kind: Kustomization metadata: name: external-secrets namespace: flux-system spec: path: ./infrastructure/external-secrets sourceRef: kind: GitRepository name: flux-shared-platform targetNamespace: external-secrets Workflow Orchestration # argo-workflows # Path: ./infrastructure/argo-workflows Purpose: Kubernetes-native workflow engine Use cases: CI/CD pipelines, data processing, backup automation Dependencies: argoproj helm repository Common customization: workflowNamespaces configuration apiVersion: kustomize.toolkit.fluxcd.io/v1 kind: Kustomization metadata: name: argo-workflows namespace: flux-system spec: path: ./infrastructure/argo-workflows sourceRef: kind: GitRepository name: flux-shared-platform patches: - patch: | - op: replace path: /spec/values/controller/workflowNamespaces value: [&#34;production&#34;, &#34;staging&#34;, &#34;default&#34;] target: kind: HelmRelease name: argo-workflows Monitoring Stack # prometheus-operator # Path: ./infrastructure/prometheus-operator Purpose: Metrics collection and alerting infrastructure Components: Prometheus, Grafana, AlertManager Dependencies: prometheus helm repository kube-state-metrics # Path: ./infrastructure/kube-state-metrics Purpose: Kubernetes cluster state metrics Integration: Works with prometheus-operator Policy and Security # kyverno # Path: ./infrastructure/kyverno Purpose: Policy enforcement and governance Use cases: Security policies, resource validation, mutation Dependencies: kyverno helm repository kubescape # Path: ./infrastructure/kubescape Purpose: Kubernetes security scanning and compliance Integration: Provides security insights and compliance reports Networking # cilium # Path: ./infrastructure/cilium Purpose: Advanced networking and security for Kubernetes Features: Network policies, service mesh, observability Dependencies: cilium helm repository external-dns # Path: ./infrastructure/external-dns Purpose: Automated DNS record management Integration: Works with cert-manager for automated certificate management Storage # csi-driver-lvm # Path: ./infrastructure/csi-driver-lvm Purpose: LVM-based persistent volume provisioning Use case: High-performance local storage Application Management # argocd # Path: ./infrastructure/argocd Purpose: GitOps application deployment and management Separation: Complements Flux CD for application-specific deployments Templates and Patterns # Automation Templates # Path: ./templates/automation/ Components: Discord notifications, image update automation, webhook receivers Use case: Extend Flux CD with custom automation workflows Monitoring Templates # Path: ./templates/monitoring/ Components: Prometheus rules, scrape configs, alert definitions Categories: Infrastructure, application, security, and network monitoring RBAC Templates # Path: ./templates/rbac/ Components: Service accounts, role definitions, SSO integration Use case: Standardized permission patterns Networking Templates # Path: ./templates/networking/ Components: Ingress patterns, network policies, service definitions Use case: Secure networking configurations Helm Repositories # The shared platform includes definitions for common Helm repositories:">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="docs">
+<title>Component Reference | Flux Shared Platform Documentation</title>
+<link rel="icon" href="/flux-shared-platform/favicon.png" >
+<link rel="manifest" href="/flux-shared-platform/manifest.json">
+<link rel="canonical" href="http://localhost:1313/flux-shared-platform/docs/components/">
+<link rel="stylesheet" href="/flux-shared-platform/book.min.1739c62a7cbee733ac758c7b68066973946c839c3b7ff4b290373f86320d7b4b.css" integrity="sha256-FznGKny&#43;5zOsdYx7aAZpc5Rsg5w7f/SykDc/hjINe0s=" crossorigin="anonymous">
+  <script defer src="/flux-shared-platform/fuse.min.js"></script>
+  <script defer src="/flux-shared-platform/en.search.min.dee01ffe2057255046edcf4fc13302c22a06f6dc92aaa9f4bcf277b18b72dad0.js" integrity="sha256-3uAf/iBXJVBG7c9PwTMCwioG9tySqqn0vPJ3sYty2tA=" crossorigin="anonymous"></script>
+
+  <script defer src="/flux-shared-platform/sw.min.91b5e938b9ec7ff17c26a2323df805583c32cc8550131f7c3cd048807adb112f.js" integrity="sha256-kbXpOLnsf/F8JqIyPfgFWDwyzIVQEx98PNBIgHrbES8=" crossorigin="anonymous"></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      <div class="book-menu-content">
+        
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/flux-shared-platform/"><span>Flux Shared Platform Documentation</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/quick-start/" class="">Quick Start</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/usage/" class="">Usage Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/migration/" class="">Migration Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/testing/" class="">Testing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/contributing/" class="">Contributing Guide</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/components/" class="active">Component Reference</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/flux-shared-platform/docs/examples/" class="">Examples</a>
+  
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/rossigee/flux-shared-platform"  target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+ 
+      </div>
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/flux-shared-platform/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Component Reference</h3>
+
+  <label for="toc-control">
+    
+    <img src="/flux-shared-platform/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#component-reference">Component Reference</a>
+      <ul>
+        <li><a href="#core-infrastructure-components">Core Infrastructure Components</a>
+          <ul>
+            <li><a href="#certificate-management">Certificate Management</a></li>
+            <li><a href="#secrets-management">Secrets Management</a></li>
+            <li><a href="#workflow-orchestration">Workflow Orchestration</a></li>
+            <li><a href="#monitoring-stack">Monitoring Stack</a></li>
+            <li><a href="#policy-and-security">Policy and Security</a></li>
+            <li><a href="#networking">Networking</a></li>
+            <li><a href="#storage">Storage</a></li>
+            <li><a href="#application-management">Application Management</a></li>
+          </ul>
+        </li>
+        <li><a href="#templates-and-patterns">Templates and Patterns</a>
+          <ul>
+            <li><a href="#automation-templates">Automation Templates</a></li>
+            <li><a href="#monitoring-templates">Monitoring Templates</a></li>
+            <li><a href="#rbac-templates">RBAC Templates</a></li>
+            <li><a href="#networking-templates">Networking Templates</a></li>
+          </ul>
+        </li>
+        <li><a href="#helm-repositories">Helm Repositories</a></li>
+        <li><a href="#usage-patterns">Usage Patterns</a>
+          <ul>
+            <li><a href="#basic-component-deployment">Basic Component Deployment</a></li>
+            <li><a href="#component-with-customization">Component with Customization</a></li>
+          </ul>
+        </li>
+        <li><a href="#integration-examples">Integration Examples</a></li>
+        <li><a href="#next-steps">Next Steps</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="component-reference">
+  Component Reference
+  <a class="anchor" href="#component-reference">#</a>
+</h1>
+<p>This section provides detailed information about all available infrastructure components in the shared platform.</p>
+<h2 id="core-infrastructure-components">
+  Core Infrastructure Components
+  <a class="anchor" href="#core-infrastructure-components">#</a>
+</h2>
+<h3 id="certificate-management">
+  Certificate Management
+  <a class="anchor" href="#certificate-management">#</a>
+</h3>
+<h4 id="cert-manager">
+  cert-manager
+  <a class="anchor" href="#cert-manager">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/cert-manager</code></li>
+<li><strong>Purpose</strong>: Automated certificate lifecycle management</li>
+<li><strong>Dependencies</strong>: jetstack helm repository</li>
+<li><strong>Customization</strong>: Minimal configuration needed for most use cases</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span></code></pre></div><h4 id="trust-manager-included-with-cert-manager">
+  trust-manager (included with cert-manager)
+  <a class="anchor" href="#trust-manager-included-with-cert-manager">#</a>
+</h4>
+<ul>
+<li><strong>Purpose</strong>: CA bundle distribution and trust chain management</li>
+<li><strong>Integration</strong>: Automatically deployed with cert-manager</li>
+<li><strong>Use case</strong>: Distribute internal CA certificates across the cluster</li>
+</ul>
+<h3 id="secrets-management">
+  Secrets Management
+  <a class="anchor" href="#secrets-management">#</a>
+</h3>
+<h4 id="external-secrets">
+  external-secrets
+  <a class="anchor" href="#external-secrets">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/external-secrets</code></li>
+<li><strong>Purpose</strong>: Kubernetes-native secret synchronization</li>
+<li><strong>Integration</strong>: Works with HashiCorp Vault, AWS Secrets Manager, Azure Key Vault</li>
+<li><strong>Dependencies</strong>: external-secrets helm repository</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">external-secrets</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/external-secrets</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">external-secrets</span>
+</span></span></code></pre></div><h3 id="workflow-orchestration">
+  Workflow Orchestration
+  <a class="anchor" href="#workflow-orchestration">#</a>
+</h3>
+<h4 id="argo-workflows">
+  argo-workflows
+  <a class="anchor" href="#argo-workflows">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/argo-workflows</code></li>
+<li><strong>Purpose</strong>: Kubernetes-native workflow engine</li>
+<li><strong>Use cases</strong>: CI/CD pipelines, data processing, backup automation</li>
+<li><strong>Dependencies</strong>: argoproj helm repository</li>
+<li><strong>Common customization</strong>: workflowNamespaces configuration</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-workflows</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/argo-workflows</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">patches</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">patch</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - op: replace
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          path: /spec/values/controller/workflowNamespaces
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          value: [&#34;production&#34;, &#34;staging&#34;, &#34;default&#34;]</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">target</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">HelmRelease</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-workflows</span>
+</span></span></code></pre></div><h3 id="monitoring-stack">
+  Monitoring Stack
+  <a class="anchor" href="#monitoring-stack">#</a>
+</h3>
+<h4 id="prometheus-operator">
+  prometheus-operator
+  <a class="anchor" href="#prometheus-operator">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/prometheus-operator</code></li>
+<li><strong>Purpose</strong>: Metrics collection and alerting infrastructure</li>
+<li><strong>Components</strong>: Prometheus, Grafana, AlertManager</li>
+<li><strong>Dependencies</strong>: prometheus helm repository</li>
+</ul>
+<h4 id="kube-state-metrics">
+  kube-state-metrics
+  <a class="anchor" href="#kube-state-metrics">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/kube-state-metrics</code></li>
+<li><strong>Purpose</strong>: Kubernetes cluster state metrics</li>
+<li><strong>Integration</strong>: Works with prometheus-operator</li>
+</ul>
+<h3 id="policy-and-security">
+  Policy and Security
+  <a class="anchor" href="#policy-and-security">#</a>
+</h3>
+<h4 id="kyverno">
+  kyverno
+  <a class="anchor" href="#kyverno">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/kyverno</code></li>
+<li><strong>Purpose</strong>: Policy enforcement and governance</li>
+<li><strong>Use cases</strong>: Security policies, resource validation, mutation</li>
+<li><strong>Dependencies</strong>: kyverno helm repository</li>
+</ul>
+<h4 id="kubescape">
+  kubescape
+  <a class="anchor" href="#kubescape">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/kubescape</code></li>
+<li><strong>Purpose</strong>: Kubernetes security scanning and compliance</li>
+<li><strong>Integration</strong>: Provides security insights and compliance reports</li>
+</ul>
+<h3 id="networking">
+  Networking
+  <a class="anchor" href="#networking">#</a>
+</h3>
+<h4 id="cilium">
+  cilium
+  <a class="anchor" href="#cilium">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/cilium</code></li>
+<li><strong>Purpose</strong>: Advanced networking and security for Kubernetes</li>
+<li><strong>Features</strong>: Network policies, service mesh, observability</li>
+<li><strong>Dependencies</strong>: cilium helm repository</li>
+</ul>
+<h4 id="external-dns">
+  external-dns
+  <a class="anchor" href="#external-dns">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/external-dns</code></li>
+<li><strong>Purpose</strong>: Automated DNS record management</li>
+<li><strong>Integration</strong>: Works with cert-manager for automated certificate management</li>
+</ul>
+<h3 id="storage">
+  Storage
+  <a class="anchor" href="#storage">#</a>
+</h3>
+<h4 id="csi-driver-lvm">
+  csi-driver-lvm
+  <a class="anchor" href="#csi-driver-lvm">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/csi-driver-lvm</code></li>
+<li><strong>Purpose</strong>: LVM-based persistent volume provisioning</li>
+<li><strong>Use case</strong>: High-performance local storage</li>
+</ul>
+<h3 id="application-management">
+  Application Management
+  <a class="anchor" href="#application-management">#</a>
+</h3>
+<h4 id="argocd">
+  argocd
+  <a class="anchor" href="#argocd">#</a>
+</h4>
+<ul>
+<li><strong>Path</strong>: <code>./infrastructure/argocd</code></li>
+<li><strong>Purpose</strong>: GitOps application deployment and management</li>
+<li><strong>Separation</strong>: Complements Flux CD for application-specific deployments</li>
+</ul>
+<h2 id="templates-and-patterns">
+  Templates and Patterns
+  <a class="anchor" href="#templates-and-patterns">#</a>
+</h2>
+<h3 id="automation-templates">
+  Automation Templates
+  <a class="anchor" href="#automation-templates">#</a>
+</h3>
+<ul>
+<li><strong>Path</strong>: <code>./templates/automation/</code></li>
+<li><strong>Components</strong>: Discord notifications, image update automation, webhook receivers</li>
+<li><strong>Use case</strong>: Extend Flux CD with custom automation workflows</li>
+</ul>
+<h3 id="monitoring-templates">
+  Monitoring Templates
+  <a class="anchor" href="#monitoring-templates">#</a>
+</h3>
+<ul>
+<li><strong>Path</strong>: <code>./templates/monitoring/</code></li>
+<li><strong>Components</strong>: Prometheus rules, scrape configs, alert definitions</li>
+<li><strong>Categories</strong>: Infrastructure, application, security, and network monitoring</li>
+</ul>
+<h3 id="rbac-templates">
+  RBAC Templates
+  <a class="anchor" href="#rbac-templates">#</a>
+</h3>
+<ul>
+<li><strong>Path</strong>: <code>./templates/rbac/</code></li>
+<li><strong>Components</strong>: Service accounts, role definitions, SSO integration</li>
+<li><strong>Use case</strong>: Standardized permission patterns</li>
+</ul>
+<h3 id="networking-templates">
+  Networking Templates
+  <a class="anchor" href="#networking-templates">#</a>
+</h3>
+<ul>
+<li><strong>Path</strong>: <code>./templates/networking/</code></li>
+<li><strong>Components</strong>: Ingress patterns, network policies, service definitions</li>
+<li><strong>Use case</strong>: Secure networking configurations</li>
+</ul>
+<h2 id="helm-repositories">
+  Helm Repositories
+  <a class="anchor" href="#helm-repositories">#</a>
+</h2>
+<p>The shared platform includes definitions for common Helm repositories:</p>
+<ul>
+<li><strong>jetstack</strong>: cert-manager charts</li>
+<li><strong>external-secrets</strong>: External secrets operator charts</li>
+<li><strong>argoproj</strong>: Argo project charts (workflows, CD, events)</li>
+<li><strong>prometheus</strong>: Prometheus community charts</li>
+<li><strong>kyverno</strong>: Policy engine charts</li>
+<li><strong>cilium</strong>: Networking charts</li>
+<li><strong>grafana</strong>: Grafana and related charts</li>
+</ul>
+<h2 id="usage-patterns">
+  Usage Patterns
+  <a class="anchor" href="#usage-patterns">#</a>
+</h2>
+<h3 id="basic-component-deployment">
+  Basic Component Deployment
+  <a class="anchor" href="#basic-component-deployment">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">COMPONENT_NAME</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/COMPONENT_NAME</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dependsOn</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">shared-helm-repos</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">COMPONENT_NAMESPACE</span>
+</span></span></code></pre></div><h3 id="component-with-customization">
+  Component with Customization
+  <a class="anchor" href="#component-with-customization">#</a>
+</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.toolkit.fluxcd.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">COMPONENT_NAME-custom</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">flux-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30m</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">path</span>: <span style="color:#ae81ff">./infrastructure/COMPONENT_NAME</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sourceRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepository</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flux-shared-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">patches</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">patch</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - op: replace
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          path: /spec/values/SETTING_PATH
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          value: CUSTOM_VALUE</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">target</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">HelmRelease</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">COMPONENT_NAME</span>
+</span></span></code></pre></div><h2 id="integration-examples">
+  Integration Examples
+  <a class="anchor" href="#integration-examples">#</a>
+</h2>
+<p>See the <code>examples/</code> directory in the repository for complete integration examples including:</p>
+<ul>
+<li>Multi-cluster deployments</li>
+<li>Environment-specific configurations</li>
+<li>Complete monitoring stacks</li>
+<li>Security policy implementations</li>
+</ul>
+<h2 id="next-steps">
+  Next Steps
+  <a class="anchor" href="#next-steps">#</a>
+</h2>
+<ol>
+<li>Review the 
+  <a href="/flux-shared-platform/docs/usage/">Usage Guide</a> for deployment best practices</li>
+<li>Check the 
+  <a href="/flux-shared-platform/docs/migration/">Migration Guide</a> for transitioning existing infrastructure</li>
+<li>Use the 
+  <a href="/flux-shared-platform/docs/testing/">Testing Guide</a> to validate your deployments</li>
+<li>Explore the 
+  <a href="https://github.com/rossigee/flux-shared-platform/tree/main/examples">examples directory</a> for real-world usage patterns</li>
+</ol>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/flux-shared-platform/docs/contributing/" class="flex align-center book-icon">
+        <img src="/flux-shared-platform/svg/backward.svg" class="book-icon" alt="Previous" title="Contributing Guide" />
+        <span>Contributing Guide</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/flux-shared-platform/docs/examples/" class="flex align-center book-icon">
+        <span>Examples</span>
+        <img src="/flux-shared-platform/svg/forward.svg" class="book-icon" alt="Next" title="Examples" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#component-reference">Component Reference</a>
+      <ul>
+        <li><a href="#core-infrastructure-components">Core Infrastructure Components</a>
+          <ul>
+            <li><a href="#certificate-management">Certificate Management</a></li>
+            <li><a href="#secrets-management">Secrets Management</a></li>
+            <li><a href="#workflow-orchestration">Workflow Orchestration</a></li>
+            <li><a href="#monitoring-stack">Monitoring Stack</a></li>
+            <li><a href="#policy-and-security">Policy and Security</a></li>
+            <li><a href="#networking">Networking</a></li>
+            <li><a href="#storage">Storage</a></li>
+            <li><a href="#application-management">Application Management</a></li>
+          </ul>
+        </li>
+        <li><a href="#templates-and-patterns">Templates and Patterns</a>
+          <ul>
+            <li><a href="#automation-templates">Automation Templates</a></li>
+            <li><a href="#monitoring-templates">Monitoring Templates</a></li>
+            <li><a href="#rbac-templates">RBAC Templates</a></li>
+            <li><a href="#networking-templates">Networking Templates</a></li>
+          </ul>
+        </li>
+        <li><a href="#helm-repositories">Helm Repositories</a></li>
+        <li><a href="#usage-patterns">Usage Patterns</a>
+          <ul>
+            <li><a href="#basic-component-deployment">Basic Component Deployment</a></li>
+            <li><a href="#component-with-customization">Component with Customization</a></li>
+          </ul>
+        </li>
+        <li><a href="#integration-examples">Integration Examples</a></li>
+        <li><a href="#next-steps">Next Steps</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+ 
+      </div>
+    </aside>
+    
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
