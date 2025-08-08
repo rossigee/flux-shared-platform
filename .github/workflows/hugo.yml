@@ -32,7 +32,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      HUGO_VERSION: 0.128.0
+      HUGO_VERSION: 0.147.9
     steps:
       - name: Install Hugo CLI
         run: |
@@ -45,12 +45,19 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
       - name: Install Node.js dependencies
         run: "[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true"
         working-directory: ./docs
+      - name: Debug - Check Hugo and theme
+        run: |
+          hugo version
+          ls -la docs/themes/
+          ls -la docs/themes/hugo-book/ || echo "Theme directory not found"
       - name: Build with Hugo
         env:
           # For maximum backward compatibility with Hugo modules
