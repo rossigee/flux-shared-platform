@@ -1,0 +1,11 @@
+# Hugo build files
+public/
+resources/
+.hugo_build.lock
+
+# Theme files are handled by git submodule
+# themes/
+
+# Temporary files
+.DS_Store
+Thumbs.db

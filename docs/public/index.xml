@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Flux Shared Platform - Reusable GitOps Components on Flux Shared Platform Documentation</title>
+    <title>Home on Flux Shared Platform</title>
     <link>http://localhost:1313/flux-shared-platform/</link>
-    <description>Recent content in Flux Shared Platform - Reusable GitOps Components on Flux Shared Platform Documentation</description>
+    <description>Recent content in Home on Flux Shared Platform</description>
     <generator>Hugo</generator>
     <language>en</language>
     <atom:link href="http://localhost:1313/flux-shared-platform/index.xml" rel="self" type="application/rss+xml" />

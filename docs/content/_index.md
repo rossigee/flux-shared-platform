@@ -1,5 +1,5 @@
 ---
-title: "Flux Shared Platform - Reusable GitOps Components"
+title: "Home"
 description: "A comprehensive library of reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD"
 type: docs
 ---

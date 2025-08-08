@@ -1,8 +1,11 @@
 baseURL = 'https://rossigee.github.io/flux-shared-platform'
 languageCode = 'en-us'
-title = 'Flux Shared Platform Documentation'
+title = 'Flux Shared Platform'
 description = 'Reusable GitOps manifests and templates for Kubernetes infrastructure deployment using Flux CD'
 theme = 'hugo-book'
+
+# Enable proper title handling
+titleSeparator = ' | '
 
 # SEO and metadata
 [params.seo]

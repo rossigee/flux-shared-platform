@@ -1,6 +1,6 @@
 {
-  "name": "Flux Shared Platform Documentation",
-  "short_name": "Flux Shared Platform Documentation",
+  "name": "Flux Shared Platform",
+  "short_name": "Flux Shared Platform",
   "start_url": "/flux-shared-platform/",
   "scope": "/flux-shared-platform/",
   "display": "standalone",
