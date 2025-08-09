@@ -57,7 +57,7 @@ spec:
         - name: harbor-credentials
       containers:
       - name: valkey
-        image: harbor.golder.lan/dockerhub/valkey/valkey:7.2.7-alpine
+        image: valkey/valkey:7.2.7-alpine
         ports:
         - containerPort: 6379
           name: valkey
