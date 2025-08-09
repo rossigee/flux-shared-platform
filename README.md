@@ -24,7 +24,7 @@ spec:
   interval: 10m
   ref:
     branch: main
-  url: https://gitea.golder.tech/infrastructure/flux-shared-platform
+  url: GIT_REPOSITORY_URL
 ```
 
 Then reference shared components:
@@ -62,6 +62,48 @@ flux-shared-platform/
 ├── templates/              # Reusable automation and monitoring templates
 ├── examples/               # Reference implementations and patterns
 └── scripts/                # Validation and testing utilities
+```
+
+## Parameterized Values
+
+This repository uses parameterized placeholders that must be replaced with your organization's specific values. All placeholders use ALL_CAPS format:
+
+### Required Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `PRIVATE_REGISTRY` | Private container registry hostname | `harbor.example.com` |
+| `ORGANIZATION_DOMAIN` | Organization domain name | `example.com` |
+| `ORGANIZATION_NAME` | Organization identifier | `acme-corp` |
+| `FLUX_REPO_NAME` | Flux repository name | `flux-production` |
+| `GIT_REPO_URL` | Git repository URL | `ssh://git@git.example.com/org/repo` |
+| `VAULT_SERVER_URL` | Vault server endpoint | `https://vault.example.com` |
+| `VAULT_SECRET_STORE_NAME` | Vault secret store identifier | `k8s-production-secrets` |
+| `VAULT_SECRET_PATH` | Vault secret path | `k8s-production` |
+| `EVENT_BUS_ENDPOINT` | Event bus hostname | `event-bus.example.com` |
+| `FLUX_AUTOMATION_EMAIL` | Email for Flux automation | `flux-automation@example.com` |
+| `CLUSTER_NAME` | Kubernetes cluster name | `production` |
+| `GIT_REPOSITORY_URL` | This repository's URL | `https://github.com/your-org/flux-shared-platform` |
+
+### Implementation
+
+Replace parameters using Kustomize patches in your cluster-specific overlays:
+
+```yaml
+# In your cluster overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - github.com/your-org/flux-shared-platform/infrastructure/cert-manager?ref=main
+
+patches:
+  - patch: |
+      - op: replace
+        path: /spec/values/image/registry
+        value: "harbor.example.com"
+    target:
+      kind: HelmRelease
+      name: cert-manager
 ```
 
 ## Security

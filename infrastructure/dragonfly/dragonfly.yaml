@@ -37,7 +37,7 @@ spec:
     manager:
       replicas: 1
       image:
-        registry: harbor.golder.lan
+        registry: PRIVATE_REGISTRY
         repository: dockerhub/dragonflyoss/manager
       grpc:
         enable: true
@@ -55,7 +55,7 @@ spec:
     scheduler:
       replicas: 1
       image:
-        registry: harbor.golder.lan
+        registry: PRIVATE_REGISTRY
         repository: dockerhub/dragonflyoss/scheduler
       metrics:
         enable: true
@@ -72,7 +72,7 @@ spec:
       enable: true
       replicas: 1
       image:
-        registry: harbor.golder.lan
+        registry: PRIVATE_REGISTRY
         repository: dockerhub/dragonflyoss/dfdaemon
       persistence:
         enabled: true
@@ -92,7 +92,7 @@ spec:
     client:
       enable: true
       image:
-        registry: harbor.golder.lan
+        registry: PRIVATE_REGISTRY
         repository: dockerhub/dragonflyoss/dfdaemon
       hostNetwork: false  # Changed: Use pod network instead
       dnsPolicy: ClusterFirst
@@ -115,7 +115,7 @@ spec:
           # Proxy configuration for container registries
           registryMirror:
             # Harbor proxy
-            - host: harbor.golder.lan
+            - host: PRIVATE_REGISTRY
               insecure: false
               direct: false
             # Docker Hub proxy through P2P

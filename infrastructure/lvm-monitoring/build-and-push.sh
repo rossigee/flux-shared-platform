@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Configuration
-REGISTRY="harbor.golder.lan"
+REGISTRY="PRIVATE_REGISTRY"
 PROJECT="infrastructure"
 IMAGE_NAME="lvm-monitor"
 VERSION="${1:-v1.0.0}"

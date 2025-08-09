@@ -369,7 +369,7 @@ metadata:
 spec:
   match: events.kyverno_violation
   http:
-    host: "event-bus.golder.lan"  # Replace with your event bus endpoint
+    host: "EVENT_BUS_ENDPOINT"  # Replace with your event bus endpoint
     port: 9200
     uri: "/kyverno-violations"
     format: json

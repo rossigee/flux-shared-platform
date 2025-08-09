@@ -23,7 +23,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: lvm-exporter
-        image: harbor.golder.lan/infrastructure/lvm-monitor:alpine-v1.0.0
+        image: PRIVATE_REGISTRY/infrastructure/lvm-monitor:alpine-v1.0.0
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true  # Required for LVM commands

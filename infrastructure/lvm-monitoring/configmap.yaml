@@ -260,14 +260,14 @@ data:
         # Upload JSON report
         if mc cp "${REPORT_FILE}" "lvm-minio/${S3_BUCKET}/${S3_PREFIX}/${REPORT_NAME}" --insecure 2>/dev/null; then
             echo -e "${GREEN}JSON report uploaded successfully${NC}"
-            REPORT_URL="https://infra.golder.lan/lvm-reports/${S3_PREFIX}/${REPORT_NAME}"
+            REPORT_URL="https://ORGANIZATION_DOMAIN/lvm-reports/${S3_PREFIX}/${REPORT_NAME}"
 
             # Generate and upload HTML report
             /opt/scripts/generate-html-report.sh
             if [ -f "/tmp/lvm-report-$(date +%Y%m%d).html" ]; then
                 if mc cp "/tmp/lvm-report-$(date +%Y%m%d).html" "lvm-minio/${S3_BUCKET}/${S3_PREFIX}/${HTML_NAME}" --insecure 2>/dev/null; then
                     echo -e "${GREEN}HTML report uploaded successfully${NC}"
-                    HTML_URL="https://infra.golder.lan/lvm-reports/${S3_PREFIX}/${HTML_NAME}"
+                    HTML_URL="https://ORGANIZATION_DOMAIN/lvm-reports/${S3_PREFIX}/${HTML_NAME}"
                 fi
             fi
 

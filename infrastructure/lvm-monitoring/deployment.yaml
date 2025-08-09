@@ -20,7 +20,7 @@ spec:
       containers:
       - name: metrics-exporter
         # Override this in your cluster kustomization
-        image: harbor.golder.lan/library/lvm-metrics-exporter:latest
+        image: PRIVATE_REGISTRY/library/lvm-metrics-exporter:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: CLUSTER_NAME

@@ -72,11 +72,11 @@ The monitoring scripts require a custom container image with pre-installed tools
 ./build-and-push.sh v1.0.0
 
 # Login to Harbor
-docker login harbor.golder.lan
+docker login PRIVATE_REGISTRY
 
 # Push the image
-docker push harbor.golder.lan/infrastructure/lvm-monitor:v1.0.0
-docker push harbor.golder.lan/infrastructure/lvm-monitor:latest
+docker push PRIVATE_REGISTRY/infrastructure/lvm-monitor:v1.0.0
+docker push PRIVATE_REGISTRY/infrastructure/lvm-monitor:latest
 ```
 
 ### Container Contents

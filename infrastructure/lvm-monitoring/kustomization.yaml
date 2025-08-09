@@ -12,7 +12,7 @@ resources:
   # - daemonset.yaml  # Optional: Uncomment for node-level LVM monitoring
 
 images:
-  - name: harbor.golder.lan/library/lvm-metrics-exporter
+  - name: PRIVATE_REGISTRY/library/lvm-metrics-exporter
     newTag: latest
 
 # These are meant to be overridden in cluster-specific overlays

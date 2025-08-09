@@ -2,7 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: flux-golder
+  name: FLUX_REPO_NAME
   namespace: flux-system
 spec:
   interval: 18m
@@ -11,4 +11,4 @@ spec:
   secretRef:
     name: ssh-key
   timeout: 5m
-  url: ssh://git@git-ssh.golder.lan/rossgolderltd/flux-golder
+  url: GIT_REPO_URL

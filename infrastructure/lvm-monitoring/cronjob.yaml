@@ -31,7 +31,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: monitor
-            image: harbor.golder.lan/infrastructure/lvm-monitor:v1.0.0
+            image: PRIVATE_REGISTRY/infrastructure/lvm-monitor:v1.0.0
             imagePullPolicy: IfNotPresent
             securityContext:
               allowPrivilegeEscalation: false
@@ -47,9 +47,9 @@ spec:
             - -c
             - |
               # Export CA bundle if available
-              if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
-                export CURL_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
-                export SSL_CERT_FILE=/etc/ssl/certs/golder-ca-certs/ca.crt
+              if [ -f /etc/ssl/certs/ORGANIZATION_NAME-ca-certs/ca.crt ]; then
+                export CURL_CA_BUNDLE=/etc/ssl/certs/ORGANIZATION_NAME-ca-certs/ca.crt
+                export SSL_CERT_FILE=/etc/ssl/certs/ORGANIZATION_NAME-ca-certs/ca.crt
                 export MC_INSECURE=true  # Use --insecure flag in mc commands instead
               fi
               
@@ -65,7 +65,7 @@ spec:
               mountPath: /opt/scripts/lvm-metrics-exporter.py
               subPath: lvm-metrics-exporter.py
             - name: ca-bundle
-              mountPath: /etc/ssl/certs/golder-ca-certs
+              mountPath: /etc/ssl/certs/ORGANIZATION_NAME-ca-certs
               readOnly: true
             env:
             - name: CLUSTER_NAME
@@ -106,7 +106,7 @@ spec:
               defaultMode: 0755
           - name: ca-bundle
             secret:
-              secretName: golder-ca-certs
+              secretName: ORGANIZATION_NAME-ca-certs
               optional: true
 
 ---
@@ -142,7 +142,7 @@ spec:
               type: RuntimeDefault
           containers:
           - name: monitor
-            image: harbor.golder.lan/infrastructure/lvm-monitor:v1.0.0
+            image: PRIVATE_REGISTRY/infrastructure/lvm-monitor:v1.0.0
             imagePullPolicy: IfNotPresent
             securityContext:
               allowPrivilegeEscalation: false
@@ -158,9 +158,9 @@ spec:
             - -c
             - |
               # Export CA bundle if available
-              if [ -f /etc/ssl/certs/golder-ca-certs/ca.crt ]; then
-                export CURL_CA_BUNDLE=/etc/ssl/certs/golder-ca-certs/ca.crt
-                export SSL_CERT_FILE=/etc/ssl/certs/golder-ca-certs/ca.crt
+              if [ -f /etc/ssl/certs/ORGANIZATION_NAME-ca-certs/ca.crt ]; then
+                export CURL_CA_BUNDLE=/etc/ssl/certs/ORGANIZATION_NAME-ca-certs/ca.crt
+                export SSL_CERT_FILE=/etc/ssl/certs/ORGANIZATION_NAME-ca-certs/ca.crt
                 export MC_INSECURE=true  # Use --insecure flag in mc commands instead
               fi
               
@@ -170,7 +170,7 @@ spec:
             - name: scripts
               mountPath: /opt/scripts
             - name: ca-bundle
-              mountPath: /etc/ssl/certs/golder-ca-certs
+              mountPath: /etc/ssl/certs/ORGANIZATION_NAME-ca-certs
               readOnly: true
             resources:
               requests:
@@ -196,5 +196,5 @@ spec:
               defaultMode: 0755
           - name: ca-bundle
             secret:
-              secretName: golder-ca-certs
+              secretName: ORGANIZATION_NAME-ca-certs
               optional: true

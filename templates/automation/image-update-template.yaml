@@ -2,13 +2,13 @@
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageUpdateAutomation
 metadata:
-  name: flux-golder
+  name: FLUX_REPO_NAME
   namespace: flux-system
 spec:
   interval: 18m
   sourceRef:
     kind: GitRepository
-    name: flux-golder
+    name: FLUX_REPO_NAME
     namespace: flux-system
   git:
     checkout:
@@ -16,7 +16,7 @@ spec:
         branch: master
     commit:
       author:
-        email: flux-image-automation@golder.org
+        email: FLUX_AUTOMATION_EMAIL
         name: Flux2
       messageTemplate: '{{range .Updated.Images}}{{println .}}{{end}}'
     push:

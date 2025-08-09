@@ -478,8 +478,8 @@
       {
         "current": {
           "selected": false,
-          "text": "golder-staging",
-          "value": "golder-staging"
+          "text": "CLUSTER_NAME",
+          "value": "CLUSTER_NAME"
         },
         "datasource": "${datasource}",
         "definition": "label_values(k8s_node_storage_capacity_bytes, cluster)",
