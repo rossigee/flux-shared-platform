@@ -29,3 +29,55 @@ spec:
     config:
       data:
         MONITORING_ENABLED: "true"
+
+    # Additional RBAC permissions for advanced features
+    rbac:
+      create: true
+      rules:
+        # Standard permissions (included by default)
+        - apiGroups: [""]
+          resources: ["events"]
+          verbs: ["create", "patch"]
+        - apiGroups: [""]
+          resources: ["configmaps"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources: ["secrets"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources: ["pods"]
+          verbs: ["get", "list", "watch", "delete"]
+        - apiGroups: [""]
+          resources: ["pods/exec"]
+          verbs: ["get", "list", "create"]
+        - apiGroups: [""]
+          resources: ["services"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources: ["persistentvolumeclaims"]
+          verbs: ["get", "list", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources: ["jobs"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["batch"]
+          resources: ["jobs"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["apps"]
+          resources: ["deployments"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["policy"]
+          resources: ["poddisruptionbudgets"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["postgresql.cnpg.io"]
+          resources: ["backups", "clusters", "poolers", "scheduledbackups", "clusterrolebindings"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["postgresql.cnpg.io"]
+          resources: ["backups/status", "clusters/status", "poolers/status", "scheduledbackups/status", "clusterrolebindings/status"]
+          verbs: ["get", "patch", "update", "watch"]
+        # Additional permissions for failoverquorums
+        - apiGroups: ["postgresql.cnpg.io"]
+          resources: ["failoverquorums"]
+          verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+        - apiGroups: ["postgresql.cnpg.io"]
+          resources: ["failoverquorums/status"]
+          verbs: ["get", "patch", "update", "watch"]
