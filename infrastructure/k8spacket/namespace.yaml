@@ -7,9 +7,6 @@ metadata:
     kubernetes.io/description: "k8spacket - TCP traffic and TLS connection metadata collection using eBPF"
   labels:
     name: k8spacket
-    # Trust-manager CA bundle configuration
-    golder.tech/ca-internal: "true"
-    golder.tech/ca-public: "true"
     # Pod Security Standards
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/audit: privileged
