@@ -1,0 +1,37 @@
+---
+# Helm Repository for k8spacket
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: k8spacket
+  namespace: flux-system
+spec:
+  interval: 10m
+  url: https://k8spacket.github.io/k8spacket-helm-chart
+  timeout: 3m
+---
+# ImageRepository for tracking k8spacket image updates
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: k8spacket
+  namespace: flux-system
+spec:
+  image: k8spacket/k8spacket
+  interval: 10m
+---
+# ImagePolicy for k8spacket version tracking
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: k8spacket
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: k8spacket
+  policy:
+    semver:
+      range: '>=2.1.0 <3.0.0'
+  filterTags:
+    pattern: '^v[0-9]+\.[0-9]+\.[0-9]+$'
+    extract: '$1'

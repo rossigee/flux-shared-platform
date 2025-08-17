@@ -16,3 +16,4 @@ resources:
   - metalstack.yaml
   - cilium.yaml
   - haproxytech.yaml
+  - k8spacket.yaml

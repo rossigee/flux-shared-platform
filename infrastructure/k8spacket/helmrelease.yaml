@@ -1,0 +1,83 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: k8spacket
+  namespace: k8spacket
+spec:
+  interval: 10m
+  timeout: 5m
+  chart:
+    spec:
+      chart: k8spacket
+      version: '2.1.6'
+      sourceRef:
+        kind: HelmRepository
+        name: k8spacket
+        namespace: flux-system
+      interval: 5m
+  releaseName: k8spacket
+  
+  # Health checks
+  test:
+    enable: true
+    timeout: 2m
+  
+  # Install and upgrade configuration
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    cleanupOnFail: true
+  
+  values:
+    # k8spacket configuration
+    image:
+      repository: "k8spacket/k8spacket"
+      tag: "v2.1.6"
+      pullPolicy: IfNotPresent
+    
+    # Service configuration
+    service:
+      type: ClusterIP
+      port: 8080
+      targetPort: 8080
+      annotations:
+        kubernetes.io/description: "k8spacket HTTP API for network topology and TLS data"
+    
+    # Resource limits for DaemonSet pods
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    
+    # Security context
+    securityContext:
+      privileged: true  # Required for eBPF
+      capabilities:
+        add:
+          - NET_ADMIN
+          - SYS_ADMIN
+          - BPF
+    
+    # Node selector for specific nodes if needed
+    nodeSelector: {}
+    
+    # Tolerations for tainted nodes
+    tolerations:
+      - operator: "Exists"
+    
+    # Enable metrics endpoint for Prometheus scraping
+    metrics:
+      enabled: true
+      port: 8080
+      path: /metrics
+    
+    # Configure log level
+    logLevel: "info"

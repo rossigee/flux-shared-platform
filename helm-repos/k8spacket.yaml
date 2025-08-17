@@ -1,0 +1,12 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: k8spacket
+  namespace: flux-system
+  annotations:
+    kubernetes.io/description: "k8spacket Helm repository for eBPF network monitoring"
+spec:
+  interval: 10m
+  url: https://k8spacket.github.io/k8spacket-helm-chart
+  timeout: 3m
