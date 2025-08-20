@@ -108,9 +108,6 @@ spec:
       enabled: true
       servicemonitor:
         enabled: true
-        labels:
-          app.kubernetes.io/name: cert-manager
-          app.kubernetes.io/component: controller
 
     # Node affinity to avoid control plane
     affinity:
