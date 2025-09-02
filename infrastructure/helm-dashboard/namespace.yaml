@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: helm-dashboard
+  annotations:
+    kubernetes.io/description: "Namespace for Helm Dashboard - web-based UI for Helm charts and releases"
+  labels:
+    name: helm-dashboard
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

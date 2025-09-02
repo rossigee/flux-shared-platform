@@ -1,0 +1,98 @@
+# Helm Dashboard HelmRelease Template
+# A web-based GUI for managing Helm charts and releases
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: helm-dashboard
+  annotations:
+    kubernetes.io/description: "Helm Dashboard provides a web-based GUI for managing Helm charts and releases"
+spec:
+  interval: 20m
+  chart:
+    spec:
+      chart: helm-dashboard
+      version: 2.0.4
+      sourceRef:
+        kind: HelmRepository
+        name: komodorio
+        namespace: flux-system
+  values:
+    # Basic configuration
+    replicaCount: 1
+
+    # Image configuration
+    image:
+      repository: komodorio/helm-dashboard
+      pullPolicy: IfNotPresent
+      tag: ""  # Uses chart appVersion
+
+    # Resource allocation
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+    # Dashboard configuration
+    dashboard:
+      allowWriteActions: true
+      namespace: ""  # Allow operations in all namespaces
+      
+      # Persistence for dashboard data
+      persistence:
+        enabled: true
+        size: 100M
+        accessModes:
+          - ReadWriteOnce
+
+    # Service configuration
+    service:
+      type: ClusterIP
+      port: 8080
+
+    # Security context
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1001
+      runAsGroup: 1001
+      fsGroup: 1001
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1001
+      runAsGroup: 1001
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+
+    # Service account with necessary RBAC
+    serviceAccount:
+      create: true
+      name: ""
+
+    # Extra arguments for the dashboard
+    extraArgs:
+      - --no-browser
+      - --bind=0.0.0.0
+      - --port=8080
+
+    # Pod annotations for security
+    podAnnotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+    # Update strategy
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+
+    # Node selection (optional, can be customized per cluster)
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}

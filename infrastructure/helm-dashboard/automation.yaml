@@ -1,0 +1,20 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: helm-dashboard
+spec:
+  image: komodorio/helm-dashboard
+  interval: 20m
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: helm-dashboard
+spec:
+  imageRepositoryRef:
+    name: helm-dashboard
+  policy:
+    semver:
+      range: '2.x.x'

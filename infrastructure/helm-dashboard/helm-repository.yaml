@@ -1,0 +1,10 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: komodorio
+  annotations:
+    kubernetes.io/description: "Komodor Helm charts repository including Helm Dashboard"
+spec:
+  interval: 24h
+  url: https://helm-charts.komodor.io
