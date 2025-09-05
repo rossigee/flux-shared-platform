@@ -83,9 +83,6 @@ spec:
     # Service configuration for Prometheus discovery
     service:
       type: ClusterIP
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8080"
     
     # Node affinity for TH region if needed
     nodeSelector:

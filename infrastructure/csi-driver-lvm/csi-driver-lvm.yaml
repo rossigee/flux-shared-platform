@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: csi-driver-lvm
-      version: "0.9.0"
+      version: "0.7.0"
       sourceRef:
         kind: HelmRepository
         name: metal-stack
